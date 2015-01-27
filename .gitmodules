@@ -1,0 +1,6 @@
+[submodule "thirdparty/libbson"]
+	path = thirdparty/libbson
+	url = https://github.com/mongodb/libbson.git
+[submodule "thirdparty/rapidjson"]
+	path = thirdparty/rapidjson
+	url = https://github.com/miloyip/rapidjson.git

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="game" namespace="entity">
+    <document name="Color">
+        <field name="red" type="uint32"/>
+        <field name="green" type="uint32"/>
+        <field name="blue" type="uint32"/>
+    </document>
+    <document name="account">
+        <field name="_id" type="objectid"/>
+        <field name="userid" type="uint64"/>
+        <field name="username" type="string"/>
+        <field name="name" type="document">
+            <field name="first_name" type="string"/>
+            <field name="last_name" type="string"/>
+        </field>
+        <field name="favorite_color" type="document" ref="Color"/>
+        <field name="male" type="bool"/>
+        <field name="height" type="double"/>
+        <field name="age" type="uint32"/>
+        <field name="birth_date" type="datetime"/>
+        <field name="retire_date" type="datetime"/>
+        <field name="death_date" type="datetime"/>
+        <field name="photo" type="binary"/>
+        <field name="titles" type="array" ref="string"/>
+        <field name="clothes" type="array">
+            <field name="name" type="string"/>
+            <field name="colors" type="array" ref="Color"/>
+        </field>
+        <field name="company" type="objectid" ref="true"/>
+    </document>
+</database>

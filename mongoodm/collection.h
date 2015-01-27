@@ -1,0 +1,176 @@
+/**
+ * Copyright (c) 2015 Junheng Zang(junheng.zang@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal 
+ * in the Software without restriction, including without limitation the rights 
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ * copies of the Software, and to permit persons to whom the Software is 
+ * furnished to do so, subject to the following conditions: 
+ *
+ * The above copyright notice and this permission notice shall be included in all 
+ * copies or substantial portions of the Software.  
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ */
+#ifndef MONGOODM_COLLECTION_H_
+#define MONGOODM_COLLECTION_H_
+
+#include <mongoc.h>
+
+namespace mongoodm {
+
+class Document;
+
+class Collection
+{
+public:
+	Collection(mongoc_collection_t *raw_collection)
+		: raw_collection_(raw_collection)
+	{
+	}
+	virtual ~Collection()
+	{
+		if (raw_collection_ != NULL) {
+			mongoc_collection_destroy(raw_collection_);
+		}
+	}
+
+	mongoc_collection_t* GetRaw() { return raw_collection_; }
+    const char* GetName() const;
+    bool Rename(const char *new_db_name, const char *new_collection_name, bool drop_target_before_rename);
+    bool Stats(const bson_t *options, bson_t *reply);
+    bool Stats(const std::string &options_str, std::string &reply_str);
+    bool Validate(const bson_t *options, bson_t *reply);
+    bool Validate(bool full, bool scandata, bson_t *reply);
+    bool Validate(bool full, bool scandata, std::string &reply_str);
+	std::string GetLastError() const;
+	bool Drop();
+
+    bool ExecuteSimpleCommand(
+            const bson_t *command,
+            const mongoc_read_prefs_t *read_prefs,
+            bson_t *reply);
+    bool ExecuteSimpleCommand(
+            const std::string &command_str,
+            const mongoc_read_prefs_t *read_prefs,
+            std::string &reply_str);
+	bool CreateIndex(const bson_t *keys, const mongoc_index_opt_t *opt);
+	bool CreateIndex(const std::string &keys_str, const mongoc_index_opt_t *opt);
+	bool DropIndex(const char *index_name);
+
+    int64_t Count(
+            mongoc_query_flags_t flags, 
+            const bson_t *query, 
+            int64_t skip = 0, 
+            int64_t limit = 0, 
+            const mongoc_read_prefs_t *read_prefs = NULL);
+    int64_t Count(
+            mongoc_query_flags_t flags, 
+            const std::string &query_str, 
+            int64_t skip = 0, 
+            int64_t limit = 0, 
+            const mongoc_read_prefs_t *read_prefs = NULL);
+
+    int FindRawDocuments(
+            std::vector<const bson_t*> &results, 
+            bson_t *query, 
+            bson_t *ret_fields = NULL, 
+            unsigned int offset = 0,
+            unsigned int limit = 0,
+            unsigned int batch_size = 100);
+    int FindRawDocuments(
+            std::vector<std::string> &results, 
+            const std::string &query_str, 
+            const std::string &ret_fields_str = "", 
+            unsigned int offset = 0,
+            unsigned int limit = 0,
+            unsigned int batch_size = 100);
+    template <class T_Document>
+    int FindDocuments(
+            std::vector<T_Document*> &results, 
+            const std::string &query_str, 
+            const std::string &ret_fields_str = "", 
+            unsigned int offset = 0,
+            unsigned int limit = 0,
+            unsigned int batch_size = 100);
+    template <class T_Document>
+    bool FindOneDocument(
+            T_Document &result, 
+            const std::string &query_str, 
+            const std::string &ret_fields_str = "");
+
+    bool FindAndModify(
+            const bson_t *query, 
+            const bson_t *sort, 
+            const bson_t *update, 
+            const bson_t *fields, 
+            bool _remove, 
+            bool upsert, 
+            bool _new, 
+            bson_t *reply);
+    bool FindAndModify(
+            const char *query_str, 
+            const char *sort_str, 
+            const char *update_str, 
+            const char *fields_str, 
+            bool _remove, 
+            bool upsert, 
+            bool _new, 
+            std::string *reply_str);
+
+    bool InsertDocument(const Document *doc);
+    bool InsertBulkDocuments(const std::vector<const Document *> & docs);
+
+    bool Update(
+            mongoc_update_flags_t flags,
+            const bson_t *selector,
+            const bson_t *update, 
+            const mongoc_write_concern_t *write_concern = NULL);
+    bool Update(
+            mongoc_update_flags_t flags,
+            const std::string &selector_str,
+            const std::string &update_str, 
+            const mongoc_write_concern_t *write_concern = NULL); 
+    bool UpdateDocument(
+            mongoc_update_flags_t flags,
+            const Document *doc, 
+            const mongoc_write_concern_t *write_concern = NULL);
+
+    bool Save(
+            const bson_t *doc,
+            const mongoc_write_concern_t *write_concern = NULL);
+    bool SaveDocument(
+            const Document *doc,
+            const mongoc_write_concern_t *write_concern = NULL);
+
+    bool Remove(
+            mongoc_remove_flags_t flags,
+            const bson_t *selector,
+            const mongoc_write_concern_t *write_concern = NULL);
+    bool Remove(
+            mongoc_remove_flags_t flags,
+            const std::string &selector_str,
+            const mongoc_write_concern_t *write_concern = NULL);
+
+private:
+	// Forbid copy and assignment
+	Collection(const Collection &other) {}
+	Collection& operator=(const Collection &other) { return *this; }
+
+private:
+	mongoc_collection_t *raw_collection_;
+};  // class Collection
+
+}  // namespace mongoodm
+
+#include "detail/collection_impl.h"
+
+#endif  // MONGOODM_COLLECTION_H_
+

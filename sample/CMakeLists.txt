@@ -1,0 +1,27 @@
+project(sample C CXX)
+cmake_minimum_required(VERSION 2.8)
+
+message(STATUS "PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
+
+# Possible values of CMAKE_BUILD_TYPE are empty, Debug, Release, RelWithDebInfo and MinSizeRel
+set(CMAKE_BUILD_TYPE Debug)
+message(STATUS "Build Type: " ${CMAKE_BUILD_TYPE})
+
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
+message(STATUS "EXECUTABLE_OUTPUT_PATH: ${EXECUTABLE_OUTPUT_PATH}")
+
+set(SRCS ../mongoodm/mongoodm_all.cpp sample.cpp account.cpp sample.cpp)
+
+# mongodb C driver
+find_package(PkgConfig)
+pkg_check_modules(LIBMONGOC REQUIRED libmongoc-1.0)
+include_directories(${LIBMONGOC_INCLUDE_DIRS})
+# rapidjson
+include_directories(${PROJECT_SOURCE_DIR}/../thirdparty/rapidjson/include)
+# mongoodm
+include_directories(${PROJECT_SOURCE_DIR}/..)
+
+add_executable(sample ${SRCS})
+set_target_properties(sample PROPERTIES OUTPUT_NAME sample)
+target_link_libraries(sample ${LIBMONGOC_LIBRARIES})
+
