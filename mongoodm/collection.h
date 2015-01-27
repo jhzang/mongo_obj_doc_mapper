@@ -66,17 +66,32 @@ public:
 	bool DropIndex(const char *index_name);
 
     int64_t Count(
-            mongoc_query_flags_t flags, 
             const bson_t *query, 
             int64_t skip = 0, 
             int64_t limit = 0, 
+            mongoc_query_flags_t flags = MONGOC_QUERY_NONE, 
             const mongoc_read_prefs_t *read_prefs = NULL);
     int64_t Count(
-            mongoc_query_flags_t flags, 
             const std::string &query_str, 
             int64_t skip = 0, 
             int64_t limit = 0, 
+            mongoc_query_flags_t flags = MONGOC_QUERY_NONE, 
             const mongoc_read_prefs_t *read_prefs = NULL);
+
+    int64_t Exists(
+            const bson_t *query, 
+            mongoc_query_flags_t flags = MONGOC_QUERY_NONE, 
+            const mongoc_read_prefs_t *read_prefs = NULL)
+    {
+        return Count(query, 0, 0, flags, read_prefs);
+    }
+    int64_t Exists(
+            const std::string &query_str, 
+            mongoc_query_flags_t flags = MONGOC_QUERY_NONE, 
+            const mongoc_read_prefs_t *read_prefs = NULL)
+    {
+        return Count(query_str, 0, 0, flags, read_prefs);
+    }
 
     int FindRawDocuments(
             std::vector<const bson_t*> &results, 

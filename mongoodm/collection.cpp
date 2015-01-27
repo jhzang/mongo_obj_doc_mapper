@@ -229,10 +229,10 @@ bool Collection::DropIndex(const char *index_name)
 }
 
 int64_t Collection::Count(
-        mongoc_query_flags_t flags, 
         const bson_t *query, 
         int64_t skip/* = 0*/, 
         int64_t limit/* = 0*/, 
+        mongoc_query_flags_t flags/* = MONGOC_QUERY_NONE*/, 
         const mongoc_read_prefs_t *read_prefs/* = NULL*/)
 {
     assert(raw_collection_ != NULL && query != NULL);
@@ -246,10 +246,10 @@ int64_t Collection::Count(
 }
 
 int64_t Collection::Count(
-        mongoc_query_flags_t flags, 
         const std::string &query_str, 
         int64_t skip/* = 0*/, 
         int64_t limit/* = 0*/, 
+        mongoc_query_flags_t flags/* = MONGOC_QUERY_NONE*/, 
         const mongoc_read_prefs_t *read_prefs/* = NULL*/)
 {
     assert(raw_collection_ != NULL && query_str.size() > 0);
@@ -260,7 +260,7 @@ int64_t Collection::Count(
         LOG_BSON_ERROR("Collection.Count", error);
         return false;
     }
-    int64_t count = Count(flags, query, skip, limit, read_prefs);
+    int64_t count = Count(query, skip, limit, flags, read_prefs);
     bson_destroy(query);
     return count;
 }

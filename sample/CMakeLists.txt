@@ -10,7 +10,7 @@ message(STATUS "Build Type: " ${CMAKE_BUILD_TYPE})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 message(STATUS "EXECUTABLE_OUTPUT_PATH: ${EXECUTABLE_OUTPUT_PATH}")
 
-set(SRCS ../mongoodm/mongoodm_all.cpp sample.cpp account.cpp sample.cpp)
+set(SRCS ../mongoodm/mongoodm_all.cpp color.cpp account.cpp sample.cpp)
 
 # mongodb C driver
 find_package(PkgConfig)
