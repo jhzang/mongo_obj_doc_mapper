@@ -238,11 +238,11 @@ int64_t Collection::Count(
     assert(raw_collection_ != NULL && query != NULL);
 
     bson_error_t error;
-    bool retflag = mongoc_collection_count(raw_collection_, flags, query, skip, limit, read_prefs, &error);
-    if (!retflag) {
+    int64_t count = mongoc_collection_count(raw_collection_, flags, query, skip, limit, read_prefs, &error);
+    if (count < 0) {
         LOG_BSON_ERROR("Collection.Count", error);
     }
-    return retflag;
+    return count;
 }
 
 int64_t Collection::Count(

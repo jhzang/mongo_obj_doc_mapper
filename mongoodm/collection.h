@@ -78,19 +78,19 @@ public:
             mongoc_query_flags_t flags = MONGOC_QUERY_NONE, 
             const mongoc_read_prefs_t *read_prefs = NULL);
 
-    int64_t Exists(
+    bool Exists(
             const bson_t *query, 
             mongoc_query_flags_t flags = MONGOC_QUERY_NONE, 
             const mongoc_read_prefs_t *read_prefs = NULL)
     {
-        return Count(query, 0, 0, flags, read_prefs);
+        return Count(query, 0, 1, flags, read_prefs) > 0;
     }
-    int64_t Exists(
+    bool Exists(
             const std::string &query_str, 
             mongoc_query_flags_t flags = MONGOC_QUERY_NONE, 
             const mongoc_read_prefs_t *read_prefs = NULL)
     {
-        return Count(query_str, 0, 0, flags, read_prefs);
+        return Count(query_str, 0, 1, flags, read_prefs) > 0;
     }
 
     int FindRawDocuments(
