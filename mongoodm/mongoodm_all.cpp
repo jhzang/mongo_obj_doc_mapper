@@ -24,4 +24,5 @@
 #include "client.cpp"
 #include "client_pool.cpp"
 #include "collection.cpp"
+#include "database.cpp"
 

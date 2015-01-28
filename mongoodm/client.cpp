@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "client.h"
+#include "database.h"
 #include "collection.h"
 #include "debug.h"
 
@@ -137,6 +138,13 @@ bool Client::SetWriteConcern(int w, const char *wtag, int wtimeout_msec, bool fs
 	mongoc_client_set_write_concern(raw_client_, write_concern);
 	mongoc_write_concern_destroy(write_concern);
 	return true;
+}
+
+Database* Client::GetDatabase(const char *name)
+{
+	assert(raw_client_ != NULL);
+
+    return new Database(mongoc_client_get_database(raw_client_, name));
 }
 
 bool Client::GetDatabaseNames(std::vector<std::string> &db_names) const

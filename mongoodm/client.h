@@ -28,6 +28,7 @@
 
 namespace mongoodm {
 
+class Database;
 class Collection;
 
 class Client
@@ -51,6 +52,7 @@ public:
 	bool GetWriteConcern(int &w, std::string &wtag, int &wtimeout_msec, bool &fsync_, bool &journal);
 	bool SetWriteConcern(int w, const char *wtag, int wtimeout_msec, bool fsync_, bool journal);
 
+    Database* GetDatabase(const char *name);
 	bool GetDatabaseNames(std::vector<std::string> &db_names) const;
     bool GetServerStatus(
             std::string &reply_str, 
