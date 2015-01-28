@@ -188,24 +188,46 @@ bool Client::GetServerStatus(
 
 bool Client::ExecuteSimpleCommand(
         const char *db_name,
-        const bson_t *command,
+        const bson_t *cmd,
+        const mongoc_read_prefs_t *read_prefs,
+        bson_t *reply)
+{
+	assert(raw_client_ != NULL && db_name != NULL && cmd != NULL && reply != NULL);
+
+	bson_error_t error;
+    bool retflag = mongoc_client_command_simple(raw_client_, db_name, cmd, read_prefs, reply, &error);
+    if (!retflag) {
+		LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
+	}
+    return retflag;
+}
+
+bool Client::ExecuteSimpleCommand(
+        const char *db_name,
+        const std::string &cmd_str,
         const mongoc_read_prefs_t *read_prefs,
         std::string &reply_str)
 {
-	assert(raw_client_ != NULL && db_name != NULL && command != NULL);
+	assert(raw_client_ != NULL && db_name != NULL && cmd_str.size() > 0);
 
+    bson_error_t error;
+    bson_t *cmd = bson_new_from_json((const uint8_t*)cmd_str.c_str(), cmd_str.size(), &error);
+    if (NULL == cmd) {
+        LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
+        return false;
+    }
     bson_t reply = BSON_INITIALIZER;
-	bson_error_t error;
-    bool retflag = mongoc_client_command_simple(raw_client_, db_name, command, read_prefs, &reply, &error);
+    bool retflag = ExecuteSimpleCommand(db_name, cmd, read_prefs, &reply);
     if (retflag) {
         size_t length = 0;
         char *str = bson_as_json(&reply, &length);
         reply_str.assign(str, length);
         bson_free(str);
     }
-	else {
-		LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
-	}
+    else {
+        LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
+    }
+    bson_destroy(cmd);
     bson_destroy(&reply);
     return retflag;
 }

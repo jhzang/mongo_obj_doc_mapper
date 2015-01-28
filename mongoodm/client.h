@@ -60,7 +60,12 @@ public:
 
     bool ExecuteSimpleCommand(
             const char *db_name,
-            const bson_t *command,
+            const bson_t *cmd,
+            const mongoc_read_prefs_t *read_prefs,
+            bson_t *reply);
+    bool ExecuteSimpleCommand(
+            const char *db_name,
+            const std::string &cmd_str,
             const mongoc_read_prefs_t *read_prefs,
             std::string &reply_str);
 
