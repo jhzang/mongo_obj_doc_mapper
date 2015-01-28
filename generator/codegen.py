@@ -26,16 +26,16 @@ description = 'Code generator of mongoodm. Developed by Junheng Zang(junheng.zan
 default_config_filename = 'db.xml'
 gen_base_dir = "generated"
 basic_data_type_class_name_dict = { 
-        'int32': {'field': 'Int32Field', 'value': 'Int32Value'},
-        'uint32': {'field': 'UInt32Field', 'value': 'UInt32Value'},
-        'int64': {'field': 'Int64Field', 'value': 'Int64Value'}, 
-        'uint64': {'field': 'UInt64Field', 'value': 'UInt64Value'},
-        'bool': {'field': 'BoolField', 'value': 'BoolValue'},
-        'double': {'field': 'DoubleField', 'value': 'DoubleValue'},
-        'datetime': {'field': 'DateTimeField', 'value': 'DateTimeValue'}, 
-        'string': {'field': 'StringField', 'value': 'StringValue'}, 
-        'binary': {'field': 'BinaryField', 'value': 'BinaryValue'},
-        'objectid': {'field': 'ObjectIdField', 'value': 'ObjectIdValue'}
+        'int32': {'field': 'mongoodm::Int32Field', 'value': 'mongoodm::Int32Value'},
+        'uint32': {'field': 'mongoodm::UInt32Field', 'value': 'mongoodm::UInt32Value'},
+        'int64': {'field': 'mongoodm::Int64Field', 'value': 'mongoodm::Int64Value'}, 
+        'uint64': {'field': 'mongoodm::UInt64Field', 'value': 'mongoodm::UInt64Value'},
+        'bool': {'field': 'mongoodm::BoolField', 'value': 'mongoodm::BoolValue'},
+        'double': {'field': 'mongoodm::DoubleField', 'value': 'mongoodm::DoubleValue'},
+        'datetime': {'field': 'mongoodm::DateTimeField', 'value': 'mongoodm::DateTimeValue'}, 
+        'string': {'field': 'mongoodm::StringField', 'value': 'mongoodm::StringValue'}, 
+        'binary': {'field': 'mongoodm::BinaryField', 'value': 'mongoodm::BinaryValue'},
+        'objectid': {'field': 'mongoodm::ObjectIdField', 'value': 'mongoodm::ObjectIdValue'}
         }
 
 document_h_field_number_def_template = '''\
@@ -81,7 +81,7 @@ ${field_value_class_name}& ${class_name}::mutable_${field_name}()
 
 document_h_array_field_accessor_template = '''\
     // ${field_name}
-    bool has_${field_name}() const;
+    bool has_${field_name}() const { return has_bit(${field_number_tag}); }
     void clear_${field_name}();
     bool ${field_name}_size() const;
     const ${array_member_class_name}* ${field_name}(size_t index) const;
@@ -186,8 +186,8 @@ ${field_number_defs}
     };
 
 public:
-    ${class_name}() {}
-    virtual ~${class_name}() {}
+    ${class_name}();
+    virtual ~${class_name}();
 
     ${class_name}(const ${class_name} &other);
     ${class_name}& operator=(const ${class_name} &other);
@@ -374,7 +374,7 @@ def parse_document(document_element, document_type_name, is_embeded, documents):
                 field['value_class_name'] = basic_data_type_class_name_dict[field['ref']]['value']
             else:
                 field['value_class_name'] = field['ref']
-            field['class_name'] = 'GenericField<%s>' % field['value_class_name']
+            field['class_name'] = 'mongoodm::GenericField<%s>' % field['value_class_name']
         elif field['type'] == 'array':
             if 'ref' in field_element.attrib:
                 field['ref'] = field_element.attrib['ref']
@@ -388,8 +388,8 @@ def parse_document(document_element, document_type_name, is_embeded, documents):
                 field['array_member_class_name'] = basic_data_type_class_name_dict[field['ref']]['value']
             else:
                 field['array_member_class_name'] = field['ref']
-            field['class_name'] = 'ArrayField<%s>' % field['array_member_class_name']
-            field['value_class_name'] = 'GenericArrayValue<%s>' % field['array_member_class_name']
+            field['class_name'] = 'mongoodm::ArrayField<%s>' % field['array_member_class_name']
+            field['value_class_name'] = 'mongoodm::GenericArrayValue<%s>' % field['array_member_class_name']
         else:
             field['value_class_name'] = basic_data_type_class_name_dict[field['type']]['value']
             field['class_name'] = basic_data_type_class_name_dict[field['type']]['field']
