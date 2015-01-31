@@ -22,6 +22,7 @@
 #include "database.h"
 #include "debug.h"
 #include "collection.h"
+#include "utility.h"
 
 namespace mongoodm {
 
@@ -74,10 +75,7 @@ bool Database::ExecuteSimpleCommand(
     bson_t reply = BSON_INITIALIZER;
     bool retflag = ExecuteSimpleCommand(command, read_prefs, &reply);
     if (retflag) {
-        size_t length = 0;
-        char *str = bson_as_json(&reply, &length);
-        reply_str.assign(str, length);
-        bson_free(str);
+        Utility::BsonToJsonString(&reply, reply_str);
     }
     bson_destroy(command);
     bson_destroy(&reply);

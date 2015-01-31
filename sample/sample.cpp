@@ -87,7 +87,7 @@ int main()
         std::cout << "---Updating " << (*it)->GetIdField()->GetValue()->ToJsonString() << "---" << std::endl;
         (*it)->mutable_height().SetValue(2.11);
         (*it)->clear_male();
-        if (!collection->UpdateDocument(MONGOC_UPDATE_NONE, *it)) {
+        if (!collection->UpdateDocument(*it, MONGOC_UPDATE_NONE)) {
             std::cout << "Failed" << std::endl;
         }
         else {
@@ -98,6 +98,15 @@ int main()
         delete *it;
         *it = NULL;
     }
+
+    std::cout << "------other------" << std::endl;
+    bson_t reply = BSON_INITIALIZER;
+    collection->Stats(NULL, &reply);
+    char *s = bson_as_json(&reply, NULL);
+    std::cout << "Stats: " << s << std::endl;
+    bson_free(s);
+    bson_destroy(&reply);
+
 	delete collection;
 	pool.Push(client);
     return 0;

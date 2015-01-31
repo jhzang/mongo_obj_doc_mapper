@@ -95,7 +95,7 @@ bool Collection::FindOneDocument(
         const std::string &ret_fields_str/* = ""*/)
 {
     std::vector<std::string> raw_results;
-    int retcode = FindRawDocuments(raw_results, query_str, ret_fields_str, 0, 1, 1);
+    int retcode = Find(raw_results, query_str, ret_fields_str, 0, 1, 1);
     if (retcode <= 0 || raw_results.empty()) {
         return false;
     }

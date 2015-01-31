@@ -93,14 +93,14 @@ public:
         return Count(query_str, 0, 1, flags, read_prefs) > 0;
     }
 
-    int FindRawDocuments(
+    int Find(
             std::vector<const bson_t*> &results, 
             bson_t *query, 
             bson_t *ret_fields = NULL, 
             unsigned int offset = 0,
             unsigned int limit = 0,
             unsigned int batch_size = 100);
-    int FindRawDocuments(
+    int Find(
             std::vector<std::string> &results, 
             const std::string &query_str, 
             const std::string &ret_fields_str = "", 
@@ -138,41 +138,62 @@ public:
             bool _remove, 
             bool upsert, 
             bool _new, 
-            std::string *reply_str);
+            rapidjson::Value *retval,
+            rapidjson::Value *last_error);
 
-    bool InsertDocument(const Document *doc);
-    bool InsertBulkDocuments(const std::vector<const Document *> & docs);
+    bool Insert(
+            const bson_t *document,
+            mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
+            const mongoc_write_concern_t *write_concern = NULL);
+    bool InsertDocument(
+            const Document *document,
+            mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
+            const mongoc_write_concern_t *write_concern = NULL);
+    bool InsertBulk(
+            const std::vector<const bson_t*> &documents,
+            mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
+            const mongoc_write_concern_t *write_concern = NULL,
+            bson_t *reply = NULL);
+    bool InsertBulkDocuments(
+            const std::vector<const Document*> &documents,
+            mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
+            const mongoc_write_concern_t *write_concern = NULL,
+            rapidjson::Value *retval = NULL,
+            rapidjson::Value *last_error = NULL);
 
     bool Update(
-            mongoc_update_flags_t flags,
             const bson_t *selector,
             const bson_t *update, 
+            mongoc_update_flags_t flags,
             const mongoc_write_concern_t *write_concern = NULL);
     bool Update(
-            mongoc_update_flags_t flags,
             const std::string &selector_str,
             const std::string &update_str, 
+            mongoc_update_flags_t flags,
             const mongoc_write_concern_t *write_concern = NULL); 
     bool UpdateDocument(
+            const Document *document, 
             mongoc_update_flags_t flags,
-            const Document *doc, 
             const mongoc_write_concern_t *write_concern = NULL);
 
     bool Save(
-            const bson_t *doc,
+            const bson_t *document,
             const mongoc_write_concern_t *write_concern = NULL);
     bool SaveDocument(
-            const Document *doc,
+            const Document *document,
             const mongoc_write_concern_t *write_concern = NULL);
 
     bool Remove(
-            mongoc_remove_flags_t flags,
             const bson_t *selector,
+            mongoc_remove_flags_t flags,
             const mongoc_write_concern_t *write_concern = NULL);
     bool Remove(
-            mongoc_remove_flags_t flags,
             const std::string &selector_str,
+            mongoc_remove_flags_t flags,
             const mongoc_write_concern_t *write_concern = NULL);
+
+public:
+    static bool ParseCRUDReply(const bson_t *reply, rapidjson::Value *retval, rapidjson::Value *last_error);
 
 private:
 	// Forbid copy and assignment

@@ -53,13 +53,13 @@ namespace mongoodm {
 #endif
 
 #if LOG_LEVEL >= LOG_LEVEL_WARN
-#define LOG_WARN(...) std::cout << " WARN " << __VA_ARGS__
+#define LOG_WARN(...) std::cerr << " WARN " << __VA_ARGS__
 #else
 #define LOG_WARN(...)
 #endif
 
 #if LOG_LEVEL >= LOG_LEVEL_ERROR
-#define LOG_ERROR(...) std::cout << "ERROR " << __VA_ARGS__
+#define LOG_ERROR(...) std::cerr << "ERROR " << __VA_ARGS__
 #else
 #define LOG_ERROR(...)
 #endif

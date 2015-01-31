@@ -20,10 +20,32 @@
  * SOFTWARE.
  */
 #include "collection.h"
+#include <rapidjson/document.h>
 #include "debug.h"
 #include "document.h"
+#include "utility.h"
 
 namespace mongoodm {
+
+bool Collection::ParseCRUDReply(const bson_t *reply, rapidjson::Value *retval, rapidjson::Value *last_error)
+{
+    assert(reply != NULL);
+
+    size_t length = 0;
+    char *str = bson_as_json(reply, &length);
+    rapidjson::Document json_doc;
+    if (json_doc.Parse(str).HasParseError()) {
+        return false;
+    }
+    if (retval != NULL && json_doc.HasMember("value")) {
+        retval->Swap(json_doc["value"]);
+    }
+    if (last_error != NULL && json_doc.HasMember("lastErrorObject")) {
+        last_error->Swap(json_doc["lastErrorObject"]);
+    }
+    bson_free(str);
+    return true;
+}
 
 const char* Collection::GetName() const
 {
@@ -71,10 +93,7 @@ bool Collection::Stats(const std::string &options_str, std::string &reply_str)
     bson_t reply = BSON_INITIALIZER;
     bool retflag = Stats(options, &reply);
     if (retflag) {
-        size_t length = 0;
-        char *str = bson_as_json(&reply, &length);
-        reply_str.assign(str, length);
-        bson_free(str);
+        Utility::BsonToJsonString(&reply, reply_str);
     }
     if (options != NULL) {
         bson_destroy(options);
@@ -112,10 +131,7 @@ bool Collection::Validate(bool full, bool scandata, std::string &reply_str)
     bson_t reply = BSON_INITIALIZER;
     bool retflag = Validate(full, scandata, &reply);
     if (retflag) {
-        size_t length = 0;
-        char *str = bson_as_json(&reply, &length);
-        reply_str.assign(str, length);
-        bson_free(str);
+        Utility::BsonToJsonString(&reply, reply_str);
     }
     bson_destroy(&reply);
     return retflag;
@@ -128,10 +144,7 @@ std::string Collection::GetLastError() const
 	std::string error_str;
 	const bson_t *error = mongoc_collection_get_last_error(raw_collection_);
 	if (error != NULL) {
-		size_t length = 0;
-		char *str = bson_as_json(error, &length);
-		error_str.assign(str, length);
-		bson_free(str);
+        Utility::BsonToJsonString(error, error_str);
 	}
 	return error_str;
 }
@@ -167,10 +180,7 @@ bool Collection::ExecuteSimpleCommand(
     bson_t reply = BSON_INITIALIZER;
     bool retflag = ExecuteSimpleCommand(command, read_prefs, &reply);
     if (retflag) {
-        size_t length = 0;
-        char *str = bson_as_json(&reply, &length);
-        reply_str.assign(str, length);
-        bson_free(str);
+        Utility::BsonToJsonString(&reply, reply_str);
     }
     bson_destroy(command);
     bson_destroy(&reply);
@@ -265,7 +275,7 @@ int64_t Collection::Count(
     return count;
 }
 
-int Collection::FindRawDocuments(
+int Collection::Find(
 		std::vector<const bson_t*> &results, 
         bson_t *query, 
         bson_t *ret_fields/* = NULL*/, 
@@ -283,7 +293,7 @@ int Collection::FindRawDocuments(
     int retcode = results.size();
 	bson_error_t error;
     if (mongoc_cursor_error (cursor, &error)) {
-		LOG_BSON_ERROR("Collection.FindRawDocuments", error);
+		LOG_BSON_ERROR("Collection.Find", error);
         retcode = -1;
     }
     mongoc_cursor_destroy(cursor);
@@ -291,7 +301,7 @@ int Collection::FindRawDocuments(
 
 }
 
-int Collection::FindRawDocuments(
+int Collection::Find(
 		std::vector<std::string> &results, 
         const std::string &query_str, 
         const std::string &ret_fields_str/* = ""*/, 
@@ -306,7 +316,7 @@ int Collection::FindRawDocuments(
     if (query_str.size() > 0) {
         query = bson_new_from_json((const uint8_t*)query_str.c_str(), query_str.size(), &error);
         if (NULL == query) {
-			LOG_BSON_ERROR("Collection.FindRawDocuments", error);
+			LOG_BSON_ERROR("Collection.Find", error);
             return -1;
         }
     }
@@ -316,22 +326,21 @@ int Collection::FindRawDocuments(
     bson_t *fields = bson_new_from_json((const uint8_t*)ret_fields_str.c_str(), ret_fields_str.size(), &error);
     if (ret_fields_str.size() > 0 && NULL == fields) {
         bson_destroy(query);
-		LOG_BSON_ERROR("Collection.FindRawDocuments", error);
+		LOG_BSON_ERROR("Collection.Find", error);
         return -1;
     }
 
     mongoc_cursor_t *cursor = mongoc_collection_find(raw_collection_, MONGOC_QUERY_NONE, offset, limit, batch_size, query, fields, NULL);
     const bson_t *d = NULL;
     while (mongoc_cursor_more(cursor) && mongoc_cursor_next(cursor, &d)) {
-        size_t len = 0;
-        char *str = bson_as_json(d, &len);
-        std::cout << str << std::endl;
-        results.push_back(std::string(str, len));
+        size_t length = 0;
+        char *str = bson_as_json(d, &length);
+        results.push_back(std::string(str, length));
         bson_free(str);
     }
     int retcode = results.size();
     if (mongoc_cursor_error (cursor, &error)) {
-		LOG_BSON_ERROR("Collection.FindRawDocuments", error);
+		LOG_BSON_ERROR("Collection.Find", error);
         retcode = -1;
     }
     mongoc_cursor_destroy(cursor);
@@ -370,8 +379,9 @@ bool Collection::FindAndModify(
         const char *fields_str, 
         bool _remove, 
         bool upsert, 
-        bool _new, 
-        std::string *reply_str)
+        bool _new,
+        rapidjson::Value *retval,
+        rapidjson::Value *last_error)
 {
     assert(raw_collection_ != NULL && query_str != NULL);
 
@@ -408,13 +418,13 @@ bool Collection::FindAndModify(
         }
         return false;
     }
-    bson_t *reply = (NULL == reply_str ? NULL : bson_new());
+    bson_t *reply = NULL;
+    if (retval != NULL || last_error != NULL) {
+        reply = bson_new();
+    }
     bool retflag = FindAndModify(query, sort, update, fields, _remove, upsert, _new, reply);
     if (reply != NULL) {
-        size_t length = 0;
-        char *str = bson_as_json(reply, &length);
-        reply_str->assign(str, length);
-        bson_free(str);
+        ParseCRUDReply(reply, retval, last_error);
     }
     bson_destroy(query);
     if (sort != NULL) {
@@ -432,46 +442,110 @@ bool Collection::FindAndModify(
     return retflag;
 }
 
-bool Collection::InsertDocument(const Document *doc)
+bool Collection::Insert(
+        const bson_t *document,
+        mongoc_insert_flags_t flags/* = MONGOC_INSERT_NONE*/,
+        const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
-    assert(raw_collection_ != NULL && doc != NULL);
+    assert(raw_collection_ != NULL && document != NULL);
 
 	bson_error_t error;
-    bson_t b_doc = BSON_INITIALIZER;
-    if (!doc->ToBson(&b_doc)) {
-        return false;
-    }
-    bool retflag = mongoc_collection_insert(raw_collection_, MONGOC_INSERT_NONE, &b_doc, NULL, &error);
+    bool retflag = mongoc_collection_insert(raw_collection_, flags, document, write_concern, &error);
 	if (!retflag) {
-		LOG_BSON_ERROR("Collection.InsertDocument", error);
+		LOG_BSON_ERROR("Collection.Insert", error);
 	}
-    bson_destroy(&b_doc);
     return retflag;
 }
 
-bool Collection::InsertBulkDocuments(const std::vector<const Document *> & docs)
+bool Collection::InsertDocument(
+        const Document *document,
+        mongoc_insert_flags_t flags/* = MONGOC_INSERT_NONE*/,
+        const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
-    assert(raw_collection_ != NULL && docs.size() > 0);
+    assert(raw_collection_ != NULL && document != NULL);
 
 	bson_error_t error;
-    mongoc_bulk_operation_t *bulk_op = mongoc_collection_create_bulk_operation(raw_collection_, true, NULL);
-    for (std::vector<const Document *>::const_iterator it = docs.begin(); it != docs.end(); ++it) {
-        InsertDocument(*it);
+    bson_t b_document = BSON_INITIALIZER;
+    if (!document->ToBson(&b_document)) {
+        return false;
     }
-    bson_t *reply = bson_new();
-    bool retflag = (mongoc_bulk_operation_execute(bulk_op, reply, &error) == docs.size());
+    bool retflag = Insert(&b_document, flags, write_concern);
+    bson_destroy(&b_document);
+    return retflag;
+}
+
+bool Collection::InsertBulk(
+        const std::vector<const bson_t*> &documents,
+        mongoc_insert_flags_t flags/* = MONGOC_INSERT_NONE*/,
+        const mongoc_write_concern_t *write_concern/* = NULL*/,
+        bson_t *reply/* = NULL*/)
+{
+    assert(raw_collection_ != NULL && documents.size() > 0);
+
+    mongoc_bulk_operation_t *bulk_op = mongoc_collection_create_bulk_operation(raw_collection_, true, write_concern);
+    for (std::vector<const bson_t*>::const_iterator it = documents.begin(); it != documents.end(); ++it) {
+        Insert(*it, flags, write_concern);
+    }
+	bson_error_t error;
+    bool retflag = (mongoc_bulk_operation_execute(bulk_op, reply, &error) == documents.size());
 	if (!retflag) {
-		LOG_BSON_ERROR("Collection.InsertBulkDocuments", error);
+		LOG_BSON_ERROR("Collection.InsertBulk", error);
 	}
     bson_destroy(reply);
     mongoc_bulk_operation_destroy(bulk_op);
     return retflag;
 }
 
+bool Collection::InsertBulkDocuments(
+        const std::vector<const Document*> &documents,
+        mongoc_insert_flags_t flags/* = MONGOC_INSERT_NONE*/,
+        const mongoc_write_concern_t *write_concern/* = NULL*/,
+        rapidjson::Value *retval/* = NULL*/,
+        rapidjson::Value *last_error/* = NULL*/)
+{
+    assert(raw_collection_ != NULL && documents.size() > 0);
+
+    std::vector<const bson_t*> b_documents;
+    b_documents.reserve(documents.size());
+    std::vector<const Document*>::const_iterator it;
+    for (it = documents.begin(); it != documents.end(); ++it) {
+        bson_t *b = bson_new();
+        if ((*it)->ToBson(b)) {
+            b_documents.push_back(b);
+        }
+        else {
+            LOG_ERROR("Collection.InsertBulkDocuments", "Failed to convert Document to bson_t");
+            std::vector<const bson_t*>::iterator it_b;
+            for (it_b = b_documents.begin(); it_b != b_documents.end(); ++it_b) {
+                bson_destroy(const_cast<bson_t*>(*it_b));
+            }
+            return false;
+        }
+    }
+    bson_t *reply = NULL;
+    if (retval != NULL || last_error != NULL) {
+        reply = bson_new();
+    }
+
+    bool retflag = InsertBulk(b_documents, flags, write_concern, reply);
+    if (reply != NULL) {
+        ParseCRUDReply(reply, retval, last_error);
+    }
+
+    std::vector<const bson_t*>::iterator it_b;
+    for (it_b = b_documents.begin(); it_b != b_documents.end(); ++it_b) {
+        bson_destroy(const_cast<bson_t*>(*it_b));
+    }
+    if (reply != NULL) {
+        bson_destroy(reply);
+    }
+    return retflag;
+}
+
 bool Collection::Update(
-        mongoc_update_flags_t flags,
         const bson_t *selector,
         const bson_t *update, 
+        mongoc_update_flags_t flags,
         const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
     assert(raw_collection_ != NULL && selector != NULL && update != NULL);
@@ -485,9 +559,9 @@ bool Collection::Update(
 }
 
 bool Collection::Update(
-        mongoc_update_flags_t flags,
         const std::string &selector_str,
         const std::string &update_str, 
+        mongoc_update_flags_t flags,
         const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
     assert(raw_collection_ != NULL && selector_str.size() > 0 && update_str.size() > 0);
@@ -504,20 +578,20 @@ bool Collection::Update(
 		LOG_BSON_ERROR("Collection.Update", error);
         return false;
     }
-    bool retflag = Update(flags, selector, update, write_concern);
+    bool retflag = Update(selector, update, flags, write_concern);
     bson_destroy(selector);
     bson_destroy(update);
     return retflag;
 }
 
 bool Collection::UpdateDocument(
+        const Document *document, 
         mongoc_update_flags_t flags,
-        const Document *doc, 
         const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
-    assert(raw_collection_ != NULL && doc != NULL);
+    assert(raw_collection_ != NULL && document != NULL);
 
-    const Field *pkey = doc->GetIdField();
+    const Field *pkey = document->GetIdField();
     assert(pkey != NULL);
     bson_t selector = BSON_INITIALIZER;
     if (!pkey->BuildBson(&selector)) {
@@ -525,25 +599,25 @@ bool Collection::UpdateDocument(
         return false;
     }
     bson_t update = BSON_INITIALIZER;
-    if (!doc->ToBson(&update)) {
+    if (!document->ToBson(&update)) {
         bson_destroy(&selector);
         bson_destroy(&update);
         return false;
     }
-    bool retflag = Update(flags, &selector, &update, write_concern);
+    bool retflag = Update(&selector, &update, flags, write_concern);
     bson_destroy(&selector);
     bson_destroy(&update);
     return retflag;
 }
 
 bool Collection::Save(
-        const bson_t *doc,
+        const bson_t *document,
         const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
-    assert(raw_collection_ != NULL && doc != NULL);
+    assert(raw_collection_ != NULL && document != NULL);
 
     bson_error_t error;
-    bool retflag = mongoc_collection_save(raw_collection_, doc, write_concern, &error);
+    bool retflag = mongoc_collection_save(raw_collection_, document, write_concern, &error);
     if (!retflag) {
         LOG_BSON_ERROR("Collection.Save", error);
     }
@@ -551,13 +625,13 @@ bool Collection::Save(
 }
 
 bool Collection::SaveDocument(
-        const Document *doc,
+        const Document *document,
         const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
-    assert(raw_collection_ != NULL && doc != NULL);
+    assert(raw_collection_ != NULL && document != NULL);
 
     bson_t b = BSON_INITIALIZER;
-    if (!doc->ToBson(&b)) {
+    if (!document->ToBson(&b)) {
         bson_destroy(&b);
         return false;
     }
@@ -567,8 +641,8 @@ bool Collection::SaveDocument(
 }
 
 bool Collection::Remove(
-        mongoc_remove_flags_t flags,
         const bson_t *selector,
+        mongoc_remove_flags_t flags,
         const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
     assert(raw_collection_ != NULL && selector != NULL);
@@ -582,8 +656,8 @@ bool Collection::Remove(
 }
 
 bool Collection::Remove(
-        mongoc_remove_flags_t flags,
         const std::string &selector_str,
+        mongoc_remove_flags_t flags,
         const mongoc_write_concern_t *write_concern/* = NULL*/)
 {
     assert(raw_collection_ != NULL && selector_str.size() > 0);
@@ -594,7 +668,7 @@ bool Collection::Remove(
         LOG_BSON_ERROR("Collection.Remove", error);
         return false;
     }
-    bool retflag = Remove(flags, selector, write_concern);
+    bool retflag = Remove(selector, flags, write_concern);
     bson_destroy(selector);
     return retflag;
 }
