@@ -142,6 +142,7 @@ document_h_array_field_accessor_template = '''\
     ${array_member_class_name}* mutable_${field_name}(size_t index);
     ${array_member_class_name}& add_${field_name}_member();
     bool del_${field_name}_member(size_t index);
+    ${field_value_class_name}* ${field_name}();
     ${field_value_class_name}& mutable_${field_name}();
 '''
 
@@ -194,6 +195,14 @@ bool ${class_name}::del_${field_name}_member(size_t index)
         return false;
     }
     return ${field_name}_->GetValue().DelMember(index);
+}
+
+${field_value_class_name}* ${class_name}::${field_name}()
+{
+    if (!has_${field_name}()) {
+        return NULL;
+    }
+    return &(${field_name}_->GetValue());
 }
 
 ${field_value_class_name}& ${class_name}::mutable_${field_name}()
