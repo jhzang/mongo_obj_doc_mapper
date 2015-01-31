@@ -25,17 +25,67 @@ __version__ = '0.1.0'
 description = 'Code generator of mongoodm. Developed by Junheng Zang(junheng.zang@gmail.com).'
 default_config_filename = 'db.xml'
 gen_base_dir = "generated"
-basic_data_type_class_name_dict = { 
-        'int32': {'field': 'mongoodm::Int32Field', 'value': 'mongoodm::Int32Value'},
-        'uint32': {'field': 'mongoodm::UInt32Field', 'value': 'mongoodm::UInt32Value'},
-        'int64': {'field': 'mongoodm::Int64Field', 'value': 'mongoodm::Int64Value'}, 
-        'uint64': {'field': 'mongoodm::UInt64Field', 'value': 'mongoodm::UInt64Value'},
-        'bool': {'field': 'mongoodm::BoolField', 'value': 'mongoodm::BoolValue'},
-        'double': {'field': 'mongoodm::DoubleField', 'value': 'mongoodm::DoubleValue'},
-        'datetime': {'field': 'mongoodm::DateTimeField', 'value': 'mongoodm::DateTimeValue'}, 
-        'string': {'field': 'mongoodm::StringField', 'value': 'mongoodm::StringValue'}, 
-        'binary': {'field': 'mongoodm::BinaryField', 'value': 'mongoodm::BinaryValue'},
-        'objectid': {'field': 'mongoodm::ObjectIdField', 'value': 'mongoodm::ObjectIdValue'}
+basic_data_type_dict = { 
+        'int32': {
+            'field': 'mongoodm::Int32Field', 
+            'value': 'mongoodm::Int32Value',
+            'setter_params': 'int32_t value',
+            'setter_args': 'value'
+            },
+        'uint32': {
+            'field': 'mongoodm::UInt32Field', 
+            'value': 'mongoodm::UInt32Value',
+            'setter_params': 'uint32_t value',
+            'setter_args': 'value'
+            },
+        'int64': {
+            'field': 'mongoodm::Int64Field', 
+            'value': 'mongoodm::Int64Value',
+            'setter_params': 'int64_t value',
+            'setter_args': 'value'
+            }, 
+        'uint64': {
+            'field': 'mongoodm::UInt64Field', 
+            'value': 'mongoodm::UInt64Value',
+            'setter_params': 'uint64_t value',
+            'setter_args': 'value'
+            },
+        'bool': {
+            'field': 'mongoodm::BoolField', 
+            'value': 'mongoodm::BoolValue',
+            'setter_params': 'bool value',
+            'setter_args': 'value'
+            },
+        'double': {
+            'field': 'mongoodm::DoubleField', 
+            'value': 'mongoodm::DoubleValue',
+            'setter_params': 'double value',
+            'setter_args': 'value'
+            },
+        'datetime': {
+            'field': 'mongoodm::DateTimeField', 
+            'value': 'mongoodm::DateTimeValue',
+            'setter_params': 'time_t value',
+            'setter_args': 'value'
+            }, 
+        'string': {
+            'field': 'mongoodm::StringField', 
+            'value': 'mongoodm::StringValue',
+            'setter_params': 'const std::string &value',
+            'setter_args': 'value'
+            }, 
+        'binary': {
+            'field': 'mongoodm::BinaryField', 
+            'value': 'mongoodm::BinaryValue',
+            'setter_params': 'bson_subtype_t subtype, const std::string &data',
+            'setter_args': 'subtype, data'
+            },
+        'objectid': {
+            'field': 'mongoodm::ObjectIdField', 
+            'value': 'mongoodm::ObjectIdValue',
+            'setter_params': 'const std::string &value',
+            'setter_args': 'value'
+            }
         }
 
 document_h_field_number_def_template = '''\
@@ -48,6 +98,10 @@ document_h_basic_field_accessor_template = '''\
     void clear_${field_name}();
     const ${field_value_class_name}* ${field_name}() const;
     ${field_value_class_name}& mutable_${field_name}();
+'''
+
+document_h_basic_field_setter_template = '''\
+    void set_${field_name}(${field_setter_params}) { mutable_${field_name}().SetValue(${field_setter_args}); }
 '''
 
 document_cpp_basic_field_method_template = '''\
@@ -86,9 +140,8 @@ document_h_array_field_accessor_template = '''\
     bool ${field_name}_size() const;
     const ${array_member_class_name}* ${field_name}(size_t index) const;
     ${array_member_class_name}* mutable_${field_name}(size_t index);
-    void add_${field_name}_member(const ${array_member_class_name} &value);
+    ${array_member_class_name}& add_${field_name}_member();
     bool del_${field_name}_member(size_t index);
-    bool set_${field_name}_member(size_t index, const ${array_member_class_name} &value);
     ${field_value_class_name}& mutable_${field_name}();
 '''
 
@@ -115,7 +168,7 @@ const ${array_member_class_name}* ${class_name}::${field_name}(size_t index) con
     return dynamic_cast<const ${array_member_class_name}*>(${field_name}_->GetValue().GetMember(index));
 }
 
-${array_member_class_name}* Account::mutable_${field_name}(size_t index)
+${array_member_class_name}* ${class_name}::mutable_${field_name}(size_t index)
 {
     if (!has_${field_name}()) {
         return NULL;
@@ -123,14 +176,16 @@ ${array_member_class_name}* Account::mutable_${field_name}(size_t index)
     return dynamic_cast<${array_member_class_name}*>(${field_name}_->GetValue().GetMember(index));
 }
 
-void ${class_name}::add_${field_name}_member(const ${array_member_class_name} &value)
+${array_member_class_name}& ${class_name}::add_${field_name}_member()
 {
     if (!has_${field_name}()) {
         set_has_${field_name}();
         ${field_name}_ = new ${field_class_name}("${field_name}");
         AddField(${field_name}_, false);
     }
-    ${field_name}_->GetValue().AddMember(&value);
+    ${array_member_class_name} *value = new ${array_member_class_name}();
+    ${field_name}_->GetValue().AddMember(value, false);
+    return *value;
 }
 
 bool ${class_name}::del_${field_name}_member(size_t index)
@@ -139,14 +194,6 @@ bool ${class_name}::del_${field_name}_member(size_t index)
         return false;
     }
     return ${field_name}_->GetValue().DelMember(index);
-}
-
-bool ${class_name}::set_${field_name}_member(size_t index, const ${array_member_class_name} &value)
-{
-    if (!has_${field_name}()) {
-        return false;
-    }
-    return ${field_name}_->GetValue().SetMember(index, &value);
 }
 
 ${field_value_class_name}& ${class_name}::mutable_${field_name}()
@@ -158,8 +205,6 @@ ${field_value_class_name}& ${class_name}::mutable_${field_name}()
     }
     return ${field_name}_->GetValue();
 }
-
-
 '''
 
 document_h_field_bit_method_template = '''\
@@ -313,15 +358,22 @@ message(STATUS "Build Type: " ${CMAKE_BUILD_TYPE})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 message(STATUS "EXECUTABLE_OUTPUT_PATH: ${EXECUTABLE_OUTPUT_PATH}")
 
-set(SRCS %(srcs)s)
-
+# mongodb C driver
+find_package(PkgConfig)
+pkg_check_modules(LIBMONGOC REQUIRED libmongoc-1.0)
+include_directories(${LIBMONGOC_INCLUDE_DIRS})
+# rapidjson
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/rapidjson/include)
 # mongoodm
-set(MONGOODM_DIR ${PROJECT_SOURCE_DIR}/external/ZenFramework)
+set(MONGOODM_DIR ${PROJECT_SOURCE_DIR}/thirdparty/mongo_obj_doc_mapper)
 set(MONGOODM_INCLUDE ${MONGOODM_DIR})
 include_directories(${MONGOODM_INCLUDE})
 
-add_executable(%(exe_name)s ${SRCS})
+set(SRCS %(srcs)s)
+
+add_executable(%(exe_name)s ${SRCS} ${MONGOODM_DIR}/mongoodm/mongoodm_all.cpp)
 set_target_properties(%(exe_name)s PROPERTIES OUTPUT_NAME %(exe_name)s)
+target_link_libraries(myapp ${LIBMONGOC_LIBRARIES})
 
 '''
 
@@ -370,8 +422,8 @@ def parse_document(document_element, document_type_name, is_embeded, documents):
             else:
                 print 'document %s field %s undefined document type' % (document['name'], filed['name'])
                 return False
-            if field['ref'] in basic_data_type_class_name_dict:
-                field['value_class_name'] = basic_data_type_class_name_dict[field['ref']]['value']
+            if field['ref'] in basic_data_type_dict:
+                field['value_class_name'] = basic_data_type_dict[field['ref']]['value']
             else:
                 field['value_class_name'] = field['ref']
             field['class_name'] = 'mongoodm::GenericField<%s>' % field['value_class_name']
@@ -384,15 +436,17 @@ def parse_document(document_element, document_type_name, is_embeded, documents):
             else:
                 print 'document %s field %s unknown array member type' % (document['name'], field['name'])
                 return False
-            if field['ref'] in basic_data_type_class_name_dict:
-                field['array_member_class_name'] = basic_data_type_class_name_dict[field['ref']]['value']
+            if field['ref'] in basic_data_type_dict:
+                field['array_member_class_name'] = basic_data_type_dict[field['ref']]['value']
             else:
                 field['array_member_class_name'] = field['ref']
             field['class_name'] = 'mongoodm::ArrayField<%s>' % field['array_member_class_name']
             field['value_class_name'] = 'mongoodm::GenericArrayValue<%s>' % field['array_member_class_name']
         else:
-            field['value_class_name'] = basic_data_type_class_name_dict[field['type']]['value']
-            field['class_name'] = basic_data_type_class_name_dict[field['type']]['field']
+            field['value_class_name'] = basic_data_type_dict[field['type']]['value']
+            field['class_name'] = basic_data_type_dict[field['type']]['field']
+            field['setter_params'] = basic_data_type_dict[field['type']]['setter_params']
+            field['setter_args'] = basic_data_type_dict[field['type']]['setter_args']
         document['fields'].append(field)
     documents[document['name']] = document
     #pprint.pprint(document)
@@ -444,8 +498,8 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
     field_var_defs = []
     for field in document['fields']:
         # include_files
-        if field['type'] not in basic_data_type_class_name_dict:
-            if field['type'] != 'array' or field['ref'] not in basic_data_type_class_name_dict:
+        if field['type'] not in basic_data_type_dict:
+            if field['type'] != 'array' or field['ref'] not in basic_data_type_dict:
                 include_files.append('#include "%s.h"' % inflection.underscore(field['ref']))
         # field_number_defs
         field_number_def = string.Template(document_h_field_number_def_template).substitute(
@@ -465,6 +519,12 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
                     field_value_class_name=field['value_class_name'],
                     array_member_class_name=field['array_member_class_name'],
                     field_number_tag=get_field_number_tag(field['name']))
+        # field setter
+        if field['type'] in basic_data_type_dict and field['type'] != 'document':
+            field_accessor += string.Template(document_h_basic_field_setter_template).substitute(
+                    field_name=field['name'],
+                    field_setter_params=field['setter_params'],
+                    field_setter_args=field['setter_args'])
         field_accessors.append(field_accessor)
         # field_bit_methods
         field_bit_methods.append(string.Template(document_h_field_bit_method_template).substitute(
@@ -559,6 +619,7 @@ def generate_code(db, output_dir, is_overwrite_mode):
         src_list.append(src_file_name)
     if not generate_CMakeLists(db, output_dir, is_overwrite_mode, src_list):
         return False
+    print 'done!'
     return True
 
 def main():

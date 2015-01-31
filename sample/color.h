@@ -30,18 +30,21 @@ public:
     void clear_red();
     const Int32Value* red() const;
     Int32Value& mutable_red();
+    void set_red(int32_t value) { mutable_red().SetValue(value); }
 
     // green
     bool has_green() const { return has_bit(kGreenFieldNumber); }
     void clear_green();
     const Int32Value* green() const;
     Int32Value& mutable_green();
+    void set_green(int32_t value) { mutable_green().SetValue(value); }
 
     // blue
     bool has_blue() const { return has_bit(kBlueFieldNumber); }
     void clear_blue();
     const Int32Value* blue() const;
     Int32Value& mutable_blue();
+    void set_blue(int32_t value) { mutable_blue().SetValue(value); }
 
 private:
     bool has_bit(unsigned int field_number) const

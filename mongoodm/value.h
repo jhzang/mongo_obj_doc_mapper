@@ -153,6 +153,19 @@ public:
 
     const std::string& GetValue() const { return value_; }
     void SetValue(const std::string &value) { value_ = value; is_null_ = false; }
+    void SetValue(const char *value, int n = -1)
+    {
+        if (NULL == value || 0 == n) {
+            value_.clear();
+        }
+        else if (n > 0) {
+            value_.assign(value, n);
+        }
+        else {
+            value_.assign(value);
+        }
+        is_null_ = false;
+    }
 
     virtual Value* Clone() const { return new StringValue(*this); }
 

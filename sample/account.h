@@ -29,12 +29,14 @@ public:
     void clear_first_name();
     const StringValue* first_name() const;
     StringValue& mutable_first_name();
+    void set_first_name(const std::string &value) { mutable_first_name().SetValue(value); }
 
     // last_name
     bool has_last_name() const { return has_bit(kLastNameFieldNumber); }
     void clear_last_name();
     const StringValue* last_name() const;
     StringValue& mutable_last_name();
+    void set_last_name(const std::string &value) { mutable_last_name().SetValue(value); }
 
 private:
     bool has_bit(unsigned int field_number) const
@@ -88,6 +90,7 @@ public:
     void clear_name();
     const StringValue* name() const;
     StringValue& mutable_name();
+    void set_name(const std::string &value) { mutable_name().SetValue(value); }
 
     // colors
     bool has_colors() const { return has_bit(kColorsFieldNumber); }
@@ -162,18 +165,21 @@ public:
     void clear__id();
     const ObjectIdValue* _id() const;
     ObjectIdValue& mutable__id();
+    void set__id(const std::string &value) { mutable__id().SetValue(value); }
 
     // userid
     bool has_userid() const { return has_bit(kUseridFieldNumber); }
     void clear_userid();
     const UInt64Value* userid() const;
     UInt64Value& mutable_userid();
+    void set_userid(uint64_t value) { mutable_userid().SetValue(value); }
 
     // username
     bool has_username() const { return has_bit(kUsernameFieldNumber); }
     void clear_username();
     const StringValue* username() const;
     StringValue& mutable_username();
+    void set_username(const std::string &value) { mutable_username().SetValue(value); }
 
     // name
     bool has_name() const { return has_bit(kNameFieldNumber); }
@@ -186,42 +192,49 @@ public:
     void clear_male();
     const BoolValue* male() const;
     BoolValue& mutable_male();
+    void set_male(bool value) { mutable_male().SetValue(value); }
 
     // height
     bool has_height() const { return has_bit(kHeightFieldNumber); }
     void clear_height();
     const DoubleValue* height() const;
     DoubleValue& mutable_height();
+    void set_height(double value) { mutable_height().SetValue(value); }
 
     // age
     bool has_age() const { return has_bit(kAgeFieldNumber); }
     void clear_age();
     const UInt32Value* age() const;
     UInt32Value& mutable_age();
+    void set_age(uint32_t value) { mutable_age().SetValue(value); }
 
     // birth_date
     bool has_birth_date() const { return has_bit(kBirthDateFieldNumber); }
     void clear_birth_date();
     const DateTimeValue* birth_date() const;
     DateTimeValue& mutable_birth_date();
+    void set_birth_date(time_t value) { mutable_birth_date().SetValue(value); }
 
     // retire_date
     bool has_retire_date() const { return has_bit(kRetireDateFieldNumber); }
     void clear_retire_date();
     const DateTimeValue* retire_date() const;
     DateTimeValue& mutable_retire_date();
+    void set_retire_date(time_t value) { mutable_retire_date().SetValue(value); }
 
     // death_date
     bool has_death_date() const { return has_bit(kDeathDateFieldNumber); }
     void clear_death_date();
     const DateTimeValue* death_date() const;
     DateTimeValue& mutable_death_date();
+    void set_death_date(time_t value) { mutable_death_date().SetValue(value); }
 
     // photo
     bool has_photo() const { return has_bit(kPhotoFieldNumber); }
     void clear_photo();
     const BinaryValue* photo() const;
     BinaryValue& mutable_photo();
+    void set_photo(bson_subtype_t subtype, const std::string &data) { mutable_photo().SetValue(subtype, data); }
 
     // titles
     bool has_titles() const { return has_bit(kTitlesFieldNumber); }
