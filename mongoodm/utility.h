@@ -25,6 +25,8 @@
 #include <string>
 #include <cassert>
 #include <mongoc.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 
 namespace mongoodm {
 
@@ -39,6 +41,14 @@ public:
         str.assign(s, length);
         bson_free(s);
         return true;
+    }
+
+    static std::string JsonToString(rapidjson::Value &json_val)
+    {
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        json_val.Accept(writer);
+        return buffer.GetString();
     }
 };
 
