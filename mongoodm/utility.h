@@ -31,7 +31,7 @@ namespace mongoodm {
 class Utility
 {
 public:
-    static bool BsonToJsonString(bson_t *b, std::string &str)
+    static bool BsonToJsonString(const bson_t *b, std::string &str)
     {
         assert(b != NULL);
         size_t length = 0;
