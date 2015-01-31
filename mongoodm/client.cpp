@@ -25,7 +25,7 @@
 #include "utility.h"
 #include "debug.h"
 
-//namespace mongoodm {
+namespace mongoodm {
 
 void Client::Cleanup()
 {
@@ -271,5 +271,5 @@ bool Client::DropCollection(const char *db_name, const char *collection_name)
     return retflag;
 }
 
-//}  // namespace mongoodm
+}  // namespace mongoodm
 
