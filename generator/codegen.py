@@ -396,16 +396,13 @@ def get_header_guard(namespace, class_name):
     return '%s_%s_H_' % (namespace.upper(), inflection.underscore(class_name).upper())
 
 def construct_embeded_document_type_name(*args):
-    parts = []
-    for arg in args:
-        parts.append(arg.capitalize())
-    return '_'.join(parts)
+    return '_'.join(args)
 
 def get_field_number_tag(field_name):
     return 'k%sFieldNumber' % inflection.camelize(field_name)
 
 def parse_document(document_element, document_type_name, is_embeded, documents):
-    #print 'Parsing document %s...' % document_type_name
+    print 'Parsing document %s...' % document_type_name
     #xml.etree.cElementTree.dump(document_element)
     document = {}
     document['name'] = document_type_name
@@ -498,6 +495,8 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
     document['class_name'] = document['name']
     document['h_filename'] = '%s.h' % inflection.underscore(document['name'])
     document['cpp_filename'] = '%s.cpp' % inflection.underscore(document['name'])
+    document['h_filename'] = '%s.h' % document['name'].lower()
+    document['cpp_filename'] = '%s.cpp' % document['name'].lower()
 
     index = 0
     include_files = []
