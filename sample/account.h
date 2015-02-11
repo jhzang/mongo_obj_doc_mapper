@@ -22,7 +22,7 @@ public:
     void CopyFrom(const Account_Name &other);
     void Clear();
 
-    virtual bool ParseField(const std::string &name, const rapidjson::Value &json_value);
+    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
     // first_name
     bool has_first_name() const { return has_bit(kFirstNameFieldNumber); }
@@ -83,7 +83,7 @@ public:
     void CopyFrom(const Account_Clothes_Member &other);
     void Clear();
 
-    virtual bool ParseField(const std::string &name, const rapidjson::Value &json_value);
+    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
     // name
     bool has_name() const { return has_bit(kNameFieldNumber); }
@@ -158,7 +158,7 @@ public:
     void CopyFrom(const Account &other);
     void Clear();
 
-    virtual bool ParseField(const std::string &name, const rapidjson::Value &json_value);
+    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
     // _id
     bool has__id() const { return has_bit(k_idFieldNumber); }

@@ -50,39 +50,61 @@ void Value::SafeDelete(T_Value *&value)
 template <typename T_Number, ValueType value_type, bson_type_t bson_value_type>
 bool NumberValue<T_Number, value_type, bson_value_type>::FromJsonValue(const rapidjson::Value &json_value)
 {
+    is_null_ = false;
     if (json_value.IsNull()) {
         is_null_ = true;
         return true;
     }
 
+    bool retflag = false;
     switch (value_type) {
         case kBoolType:
-            value_ = json_value.GetBool();
+            if (json_value.IsBool()) {
+                value_ = json_value.GetBool();
+                retflag = true;
+            }
             break;
         case kInt32Type:
-            value_ = json_value.GetInt();
+            if (json_value.IsInt()) {
+                value_ = json_value.GetInt();
+                retflag = true;
+            }
             break;
         case kUInt32Type:
-            value_ = json_value.GetUint();
+            if (json_value.IsUint()) {
+                value_ = json_value.GetUint();
+                retflag = true;
+            }
             break;
         case kInt64Type:
-            value_ = json_value.GetInt64();
+            if (json_value.IsInt64()) {
+                value_ = json_value.GetInt64();
+                retflag = true;
+            }
             break;
         case kUInt64Type:
-            value_ = json_value.GetUint64();
+            if (json_value.IsUint64()) {
+                value_ = json_value.GetUint64();
+                retflag = true;
+            }
             break;
         case kDoubleType:
-            value_ = json_value.GetDouble();
+            if (json_value.IsDouble()) {
+                value_ = json_value.GetDouble();
+                retflag = true;
+            }
             break;
         case kDateTimeType:
-            value_ = json_value.GetInt64();
+            if (json_value.IsInt64()) {
+                value_ = json_value.GetInt64();
+                retflag = true;
+            }
             break;
         default:
             assert(false);
-            return false;
+            retflag = false;
     }
-    is_null_ = false;
-    return true;
+    return retflag;
 }
 
 template <typename T_Number, ValueType value_type, bson_type_t bson_value_type>

@@ -23,7 +23,7 @@ public:
     void CopyFrom(const Color &other);
     void Clear();
 
-    virtual bool ParseField(const std::string &name, const rapidjson::Value &json_value);
+    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
     // red
     bool has_red() const { return has_bit(kRedFieldNumber); }

@@ -248,7 +248,7 @@ public:
     void CopyFrom(const ${class_name} &other);
     void Clear();
 
-    virtual bool ParseField(const std::string &name, const rapidjson::Value &json_value);
+    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
 ${field_accessors}
 private:
@@ -295,12 +295,12 @@ document_cpp_template = '''\
             if (field_name##_->FromJsonValue(json_value)) {\\
                 fields_.push_back(field_name##_);\\
                 set_has_##field_name();\\
-                return true;\\
+                return 1;\\
             }\\
             else {\\
                 delete field_name##_;\\
                 field_name##_ = NULL;\\
-                return false;\\
+                return -1;\\
             }\\
         }\\
     } while (0)
@@ -345,10 +345,10 @@ void ${class_name}::Clear()
 ${clear_fields_section}
 }
 
-bool ${class_name}::ParseField(const std::string &name, const rapidjson::Value &json_value)
+int ${class_name}::ParseField(const std::string &name, const rapidjson::Value &json_value)
 {
 ${parsefield_handle_fields_section}
-    return false;
+    return 0;
 }
 
 ${field_methods_impl}

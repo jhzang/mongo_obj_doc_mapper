@@ -55,7 +55,13 @@ public:
     virtual std::string ToJsonString() const;
     virtual bool ToBson(bson_t *b) const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
-    virtual bool ParseField(const std::string &name, const rapidjson::Value &json_value) { return false; }
+    /**
+     * @brief Try to parse named field
+     * @return  1: named field parsed successfully
+     *          0: not a named field
+     *         -1: it is a named field but parsing failed(e.g. data type is not the same as declared)
+     */
+    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value) { return 0; }
 
     FieldIterator FieldBegin() { return fields_.begin(); }
     ConstFieldIterator FieldBegin() const { return fields_.begin(); }

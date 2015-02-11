@@ -17,15 +17,15 @@
             if (field_name##_->FromJsonValue(json_value)) {\
                 fields_.push_back(field_name##_);\
                 set_has_##field_name();\
-                return true;\
+                return 1;\
             }\
             else {\
                 delete field_name##_;\
                 field_name##_ = NULL;\
-                return false;\
+                return -1;\
             }\
         }\
-    } while (false)
+    } while (0)
 
 Color::Color()
     : red_(NULL)
@@ -73,12 +73,12 @@ void Color::Clear()
     blue_ = NULL;
 }
 
-bool Color::ParseField(const std::string &name, const rapidjson::Value &json_value)
+int Color::ParseField(const std::string &name, const rapidjson::Value &json_value)
 {
     HANDLE_FIELD(red, Int32Field);
     HANDLE_FIELD(green, Int32Field);
     HANDLE_FIELD(blue, Int32Field);
-    return false;
+    return 0;
 }
 
 void Color::clear_red()

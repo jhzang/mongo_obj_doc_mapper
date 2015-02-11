@@ -109,7 +109,12 @@ bool Document::FromJsonValue(const rapidjson::Value &json_value)
     for (it = json_value.MemberBegin(); it != json_value.MemberEnd(); ++it) {
         std::string name(it->name.GetString(), it->name.GetStringLength());
         LOG_TRACE("Parsing " << name << "...");
-        if (!ParseField(name, it->value)) {
+        int code = ParseField(name, it->value);
+        if (code < 0) {
+            LOG_ERROR("parsing named field \"" << name << "\" failed" << std::endl);
+            return false;
+        }
+        else if (0 == code) {
             LOG_TRACE("unknown...");
             if (!ParseUnknownField(name, it->value)) {
                 return false;

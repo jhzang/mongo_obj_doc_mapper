@@ -101,7 +101,7 @@ bool Collection::FindOneDocument(
     }
     std::string &raw_str = raw_results[0];
     if (!result.FromJsonString(raw_str.c_str(), raw_str.size())) {
-        std::cerr << "Parsing error" << std::endl;
+        LOG_ERROR("[Collection.FindOneDocument] Parsing error" << std::endl);
         return false;
     }
     return true;

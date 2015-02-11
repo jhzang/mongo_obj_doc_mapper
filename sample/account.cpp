@@ -18,12 +18,12 @@
             if (field_name##_->FromJsonValue(json_value)) {\
                 fields_.push_back(field_name##_);\
                 set_has_##field_name();\
-                return true;\
+                return 1;\
             }\
             else {\
                 delete field_name##_;\
                 field_name##_ = NULL;\
-                return false;\
+                return -1;\
             }\
         }\
     } while (0)
@@ -70,11 +70,11 @@ void Account_Name::Clear()
     last_name_ = NULL;
 }
 
-bool Account_Name::ParseField(const std::string &name, const rapidjson::Value &json_value)
+int Account_Name::ParseField(const std::string &name, const rapidjson::Value &json_value)
 {
     HANDLE_FIELD(first_name, StringField);
     HANDLE_FIELD(last_name, StringField);
-    return false;
+    return 0;
 }
 
 void Account_Name::clear_first_name()
@@ -173,11 +173,11 @@ void Account_Clothes_Member::Clear()
     colors_ = NULL;
 }
 
-bool Account_Clothes_Member::ParseField(const std::string &name, const rapidjson::Value &json_value)
+int Account_Clothes_Member::ParseField(const std::string &name, const rapidjson::Value &json_value)
 {
     HANDLE_FIELD(name, StringField);
     HANDLE_FIELD(colors, ArrayField<Color>);
-    return false;
+    return 0;
 }
 
 void Account_Clothes_Member::clear_name()
@@ -363,7 +363,7 @@ void Account::Clear()
     //company_ = NULL;
 }
 
-bool Account::ParseField(const std::string &name, const rapidjson::Value &json_value)
+int Account::ParseField(const std::string &name, const rapidjson::Value &json_value)
 {
     HANDLE_FIELD(_id, ObjectIdField);
     HANDLE_FIELD(userid, UInt64Field);
@@ -379,7 +379,7 @@ bool Account::ParseField(const std::string &name, const rapidjson::Value &json_v
     HANDLE_FIELD(titles, ArrayField<StringValue>);
     HANDLE_FIELD(clothes, ArrayField<Account_Clothes_Member>);
     //HANDLE_FIELD(company, ReferenceField);
-    return false;
+    return 0;
 }
 
 void Account::clear__id()

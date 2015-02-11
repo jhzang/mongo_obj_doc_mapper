@@ -12,6 +12,7 @@ std::string kEmptyString;
 Value* Value::Create(const rapidjson::Value &json_value)
 {
     Value *value = NULL;
+    bool flag = true;
     if (json_value.IsNull()) {
         //value = dynamic_cast<Value*>(const_cast<internal::NullValue*>(&NullValue));
         value = NULL;
@@ -44,32 +45,28 @@ Value* Value::Create(const rapidjson::Value &json_value)
     }
     else if (json_value.IsObject()) {
         if (json_value.HasMember("$oid")) {
-            ObjectIdValue *v = new ObjectIdValue();
-            v->FromJsonValue(json_value);
-            value = v;
+            value = new ObjectIdValue();
         }
         else if (json_value.HasMember("$date")) {
-            DateTimeValue *v = new DateTimeValue();
-            v->FromJsonValue(json_value);
-            value = v;
+            value = new DateTimeValue();
         }
         else if (json_value.HasMember("$binary")) {
-            BinaryValue *v = new BinaryValue();
-            v->FromJsonValue(json_value);
-            value = v;
+            value = new BinaryValue();
         }
         else {
-            Document *v = new Document();
-            v->FromJsonValue(json_value);
-            value = v;
+            value = new Document();
         }
+        flag = value->FromJsonValue(json_value);
     }
     else if (json_value.IsArray()) {
-        ArrayValue *v = new ArrayValue();
-        v->FromJsonValue(json_value);
-        value = v;
+        value = new ArrayValue();
+        flag = value->FromJsonValue(json_value);
     }
 
+    if (value != NULL && !flag) {
+        delete value;
+        value = NULL;
+    }
     return value;
 }
 
@@ -119,6 +116,7 @@ bool DateTimeValue::FromJsonValue(const rapidjson::Value &json_value)
 {
     if (json_value.IsNull()) {
         is_null_ = true;
+        return true;
     }
     else if (json_value.IsObject()) {
         rapidjson::Value::ConstMemberIterator it_member;
@@ -128,8 +126,11 @@ bool DateTimeValue::FromJsonValue(const rapidjson::Value &json_value)
         }
         assert(it_member->value.IsInt64());
         value_ = it_member->value.GetInt64();
+        return true;
     }
-    return true;
+    else {
+        return false;
+    }
 }
 
 std::string DateTimeValue::ToJsonString() const
