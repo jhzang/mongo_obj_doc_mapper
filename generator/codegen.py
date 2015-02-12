@@ -513,7 +513,7 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
         # include_files
         if field['type'] not in basic_data_type_dict:
             if field['type'] != 'array' or field['ref'] not in basic_data_type_dict:
-                include_files.append('#include "%s.h"' % inflection.underscore(field['ref']))
+                include_files.append('#include "%s.h"' % field['ref'].lower())
         # field_number_defs
         field_number_def = string.Template(document_h_field_number_def_template).substitute(
                 field_number_tag=get_field_number_tag(field['name']),
