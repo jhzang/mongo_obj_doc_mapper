@@ -131,7 +131,11 @@ typedef NumberValue<bool, kBoolType, BSON_TYPE_BOOL> BoolValue;
 extern const BoolValue TrueValue;
 extern const BoolValue FalseValue;
 
-class DateTimeValue : public NumberValue<time_t, kDateTimeType, BSON_TYPE_DATE_TIME>
+/**
+ * @class DateTimeValue
+ * @brief The raw value is in millisecond
+ */
+class DateTimeValue : public NumberValue<int64_t, kDateTimeType, BSON_TYPE_DATE_TIME>
 {
 public:
     DateTimeValue(time_t value = 0) : NumberValue(value) {}
@@ -139,6 +143,20 @@ public:
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
+
+    void SetTime(time_t t_s) { value_ = (int64_t)t_s * 1000; }
+    time_t GetTime() const { return value_ / 1000; }
+    void SetTimeValue(struct timeval &tv)
+    {
+        value_ = (int64_t)tv.tv_sec * 1000 + (int64_t)tv.tv_usec / 1000L;
+    }
+    struct timeval GetTimeValue() const
+    {
+        struct timeval tv = {0};
+        tv.tv_sec = value_ / 1000;
+        tv.tv_usec = (value_ - tv.tv_sec * 1000) * 1000;
+        return tv;
+    }
 };
 
 

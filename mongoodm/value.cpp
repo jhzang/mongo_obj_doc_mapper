@@ -151,7 +151,7 @@ bool DateTimeValue::BuildBson(bson_t *parent, const std::string &name) const
         return bson_append_null(parent, name.c_str(), name.size());
     }
     else {
-        return bson_append_time_t(parent, name.c_str(), name.size(), value_);
+        return bson_append_date_time(parent, name.c_str(), name.size(), value_);
     }
 }
 

@@ -104,6 +104,11 @@ document_h_basic_field_setter_template = '''\
     void set_${field_name}(${field_setter_params}) { mutable_${field_name}().SetValue(${field_setter_args}); }
 '''
 
+document_h_datetime_field_setter_template = '''\
+    void set_${field_name}(time_t t) { mutable_${field_name}().SetTime(t); }
+    void set_${field_name}(struct timeval &tv) { mutable_${field_name}().SetTimeValue(tv); }
+'''
+
 document_cpp_basic_field_method_template = '''\
 void ${class_name}::clear_${field_name}()
 {
@@ -528,7 +533,10 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
                     array_member_class_name=field['array_member_class_name'],
                     field_number_tag=get_field_number_tag(field['name']))
         # field setter
-        if field['type'] in basic_data_type_dict and field['type'] != 'document':
+        if field['type'] == 'datetime':
+            field_accessor += string.Template(document_h_datetime_field_setter_template).substitute(
+                    field_name=field['name'])
+        elif field['type'] in basic_data_type_dict and field['type'] != 'document':
             field_accessor += string.Template(document_h_basic_field_setter_template).substitute(
                     field_name=field['name'],
                     field_setter_params=field['setter_params'],

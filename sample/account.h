@@ -213,21 +213,24 @@ public:
     void clear_birth_date();
     const DateTimeValue* birth_date() const;
     DateTimeValue& mutable_birth_date();
-    void set_birth_date(time_t value) { mutable_birth_date().SetValue(value); }
+    void set_birth_date(time_t t) { mutable_birth_date().SetTime(t); }
+    void set_birth_date(struct timeval &tv) { mutable_birth_date().SetTimeValue(tv); }
 
     // retire_date
     bool has_retire_date() const { return has_bit(kRetireDateFieldNumber); }
     void clear_retire_date();
     const DateTimeValue* retire_date() const;
     DateTimeValue& mutable_retire_date();
-    void set_retire_date(time_t value) { mutable_retire_date().SetValue(value); }
+    void set_retire_date(time_t t) { mutable_retire_date().SetTime(t); }
+    void set_retire_date(struct timeval &tv) { mutable_retire_date().SetTimeValue(tv); }
 
     // death_date
     bool has_death_date() const { return has_bit(kDeathDateFieldNumber); }
     void clear_death_date();
     const DateTimeValue* death_date() const;
     DateTimeValue& mutable_death_date();
-    void set_death_date(time_t value) { mutable_death_date().SetValue(value); }
+    void set_death_date(time_t t) { mutable_death_date().SetTime(t); }
+    void set_death_date(struct timeval &tv) { mutable_death_date().SetTimeValue(tv); }
 
     // photo
     bool has_photo() const { return has_bit(kPhotoFieldNumber); }
