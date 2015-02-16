@@ -351,7 +351,7 @@ public:
 
     T_Value* GetMember(size_t index)
     {
-        return index >= members_.size() ? NULL : dynamic_cast<T_Value*>(members_[index]);
+        return index >= members_.size() ? NULL : (T_Value*)(members_[index]);
     }
     const T_Value* GetMember(size_t index) const
     {

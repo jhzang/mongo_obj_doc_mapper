@@ -122,6 +122,8 @@ public:
         value_ = NULL;
     }
 
+    bool IsNull() const { return value_ == NULL; }
+
 protected:
     std::string name_;
     Value *value_;
@@ -145,22 +147,22 @@ public:
 
     const T_Value& GetValue() const
     {
-        return *dynamic_cast<T_Value*>(value_);
+        return *((T_Value*)value_);
     }
 
     T_Value& GetValue()
     {
-        return *dynamic_cast<T_Value*>(value_);
+        return *((T_Value*)value_);
     }
 
     void SetValue(const T_Value &value)
     {
-        *dynamic_cast<T_Value*>(value_) = value;
+        *((T_Value*)value_) = value;
     }
 
     bool FromJsonValue(const rapidjson::Value &json_value)
     {
-        return (dynamic_cast<T_Value*>(value_))->FromJsonValue(json_value);
+        return ((T_Value*)value_)->FromJsonValue(json_value);
     }
 };  // class GenericField
 
@@ -190,22 +192,22 @@ public:
 
     const GenericArrayValue<T_Value>& GetValue() const
     {
-        return *dynamic_cast<GenericArrayValue<T_Value>*>(value_);
+        return *((GenericArrayValue<T_Value>*)value_);
     }
 
     GenericArrayValue<T_Value>& GetValue()
     {
-        return *dynamic_cast<GenericArrayValue<T_Value>*>(value_);
+        return *((GenericArrayValue<T_Value>*)value_);
     }
 
     void SetValue(const GenericArrayValue<T_Value> &value)
     {
-        *dynamic_cast<GenericArrayValue<T_Value>*>(value_) = value;
+        *((GenericArrayValue<T_Value>*)value_) = value;
     }
 
     bool FromJsonValue(const rapidjson::Value &json_value)
     {
-        return (dynamic_cast<GenericArrayValue<T_Value>*>(value_))->FromJsonValue(json_value);
+        return ((GenericArrayValue<T_Value>*)value_)->FromJsonValue(json_value);
     }
 };  // class ArrayField
 

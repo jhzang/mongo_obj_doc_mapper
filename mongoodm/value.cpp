@@ -14,7 +14,6 @@ Value* Value::Create(const rapidjson::Value &json_value)
     Value *value = NULL;
     bool flag = true;
     if (json_value.IsNull()) {
-        //value = dynamic_cast<Value*>(const_cast<internal::NullValue*>(&NullValue));
         value = NULL;
     }
     else if (json_value.IsBool()) {
