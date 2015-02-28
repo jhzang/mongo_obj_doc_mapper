@@ -29,60 +29,70 @@ basic_data_type_dict = {
         'int32': {
             'field': 'mongoodm::Int32Field', 
             'value': 'mongoodm::Int32Value',
+            'raw_value_type': 'int32_t',
             'setter_params': 'int32_t value',
             'setter_args': 'value'
             },
         'uint32': {
             'field': 'mongoodm::UInt32Field', 
             'value': 'mongoodm::UInt32Value',
+            'raw_value_type': 'uint32_t',
             'setter_params': 'uint32_t value',
             'setter_args': 'value'
             },
         'int64': {
             'field': 'mongoodm::Int64Field', 
             'value': 'mongoodm::Int64Value',
+            'raw_value_type': 'int64_t',
             'setter_params': 'int64_t value',
             'setter_args': 'value'
             }, 
         'uint64': {
             'field': 'mongoodm::UInt64Field', 
             'value': 'mongoodm::UInt64Value',
+            'raw_value_type': 'uint64_t',
             'setter_params': 'uint64_t value',
             'setter_args': 'value'
             },
         'bool': {
             'field': 'mongoodm::BoolField', 
             'value': 'mongoodm::BoolValue',
+            'raw_value_type': 'bool',
             'setter_params': 'bool value',
             'setter_args': 'value'
             },
         'double': {
             'field': 'mongoodm::DoubleField', 
             'value': 'mongoodm::DoubleValue',
+            'raw_value_type': 'double',
             'setter_params': 'double value',
             'setter_args': 'value'
             },
         'datetime': {
             'field': 'mongoodm::DateTimeField', 
             'value': 'mongoodm::DateTimeValue',
+            'raw_value_type': 'time_t',
             'setter_params': 'time_t value',
             'setter_args': 'value'
             }, 
         'string': {
             'field': 'mongoodm::StringField', 
             'value': 'mongoodm::StringValue',
+            'raw_value_type': 'std::string',
             'setter_params': 'const std::string &value',
             'setter_args': 'value'
             }, 
         'binary': {
             'field': 'mongoodm::BinaryField', 
             'value': 'mongoodm::BinaryValue',
+            'raw_value_type': "std::string",
             'setter_params': 'bson_subtype_t subtype, const std::string &data',
             'setter_args': 'subtype, data'
             },
         'objectid': {
             'field': 'mongoodm::ObjectIdField', 
             'value': 'mongoodm::ObjectIdValue',
+            'raw_value_type': 'std::string',
             'setter_params': 'const std::string &value',
             'setter_args': 'value'
             }
@@ -98,6 +108,7 @@ document_h_basic_field_accessor_template = '''\
     void clear_${field_name}();
     const ${field_value_class_name}* ${field_name}() const;
     ${field_value_class_name}& mutable_${field_name}();
+    ${field_value_raw_type} ${field_name}_value() const { return ${field_name}_->GetValue().GetValue(); }
 '''
 
 document_h_basic_field_setter_template = '''\
@@ -456,6 +467,7 @@ def parse_document(document_element, document_type_name, is_embeded, documents):
         else:
             field['value_class_name'] = basic_data_type_dict[field['type']]['value']
             field['class_name'] = basic_data_type_dict[field['type']]['field']
+            field['raw_value_type'] = basic_data_type_dict[field['type']]['raw_value_type']
             field['setter_params'] = basic_data_type_dict[field['type']]['setter_params']
             field['setter_args'] = basic_data_type_dict[field['type']]['setter_args']
         document['fields'].append(field)
@@ -525,7 +537,8 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
             field_accessor = string.Template(document_h_basic_field_accessor_template).substitute(
                     field_name=field['name'],
                     field_value_class_name=field['value_class_name'],
-                    field_number_tag=get_field_number_tag(field['name']))
+                    field_number_tag=get_field_number_tag(field['name']),
+                    field_value_raw_type=field['raw_value_type'])
         else:
             field_accessor = string.Template(document_h_array_field_accessor_template).substitute(
                     field_name=field['name'],
