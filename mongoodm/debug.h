@@ -32,7 +32,7 @@ namespace mongoodm {
 #define LOG_LEVEL_DEBUG 3
 #define LOG_LEVEL_TRACE 4
 
-#define LOG_LEVEL LOG_LEVEL_DEBUG
+#define LOG_LEVEL LOG_LEVEL_INFO
 
 #if LOG_LEVEL >= LOG_LEVEL_TRACE
 #define LOG_TRACE(...) std::cout << "TRACE " << __VA_ARGS__
