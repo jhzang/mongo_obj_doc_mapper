@@ -186,6 +186,13 @@ public:
     }
 
     virtual Value* Clone() const { return new StringValue(*this); }
+    virtual void SetNull(bool value)
+    {
+        is_null_ = value;
+        if (is_null_) {
+            value_.clear();
+        }
+    }
 
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
     virtual std::string ToJsonString() const;
