@@ -33,6 +33,7 @@ bool Collection::ParseCRUDReply(const bson_t *reply, rapidjson::Value *retval, r
 
     size_t length = 0;
     char *str = bson_as_json(reply, &length);
+    LOG_TRACE(str << std::endl);
     rapidjson::Document json_doc;
     if (json_doc.Parse(str).HasParseError()) {
         return false;
