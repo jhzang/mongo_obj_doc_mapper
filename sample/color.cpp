@@ -27,10 +27,13 @@
         }\
     } while (0)
 
+
+namespace entity {
+
 Color::Color()
     : red_(NULL)
-    , green_(NULL)
-    , blue_(NULL)
+	, green_(NULL)
+	, blue_(NULL)
     , _has_bits_(0)
 {
 }
@@ -40,44 +43,40 @@ Color::~Color()
     Clear();
 }
 
-Color::Color(const Color &other)
+void Color::CopyFrom(const Value &other)
 {
-    CopyFrom(other);
-}
-
-Color& Color::operator=(const Color &other)
-{
-    if (this != &other) {
-        CopyFrom(other);
+    if (this == &other) {
+        return;
     }
-    return *this;
-}
 
-void Color::CopyFrom(const Color &other)
-{
     Clear();
+
     Document::CopyFrom(other);
-    _has_bits_ = other._has_bits_;
-    FIX_FIELD(red, Int32Field);
-    FIX_FIELD(green, Int32Field);
-    FIX_FIELD(blue, Int32Field);
+    if (is_null_) {
+        return;
+    }
+
+    const Color &doc = dynamic_cast<const Color&>(other);
+    _has_bits_ = doc._has_bits_;
+    FIX_FIELD(red, mongoodm::UInt32Field);
+    FIX_FIELD(green, mongoodm::UInt32Field);
+    FIX_FIELD(blue, mongoodm::UInt32Field);
 }
 
 void Color::Clear()
 {
     Document::Clear();
-
     _has_bits_ = 0;
-    red_ = NULL;
-    green_ = NULL;
-    blue_ = NULL;
+	red_ = NULL;
+	green_ = NULL;
+	blue_ = NULL;
 }
 
 int Color::ParseField(const std::string &name, const rapidjson::Value &json_value)
 {
-    HANDLE_FIELD(red, Int32Field);
-    HANDLE_FIELD(green, Int32Field);
-    HANDLE_FIELD(blue, Int32Field);
+    HANDLE_FIELD(red, mongoodm::UInt32Field);
+    HANDLE_FIELD(green, mongoodm::UInt32Field);
+    HANDLE_FIELD(blue, mongoodm::UInt32Field);
     return 0;
 }
 
@@ -90,7 +89,7 @@ void Color::clear_red()
     }
 }
 
-const Int32Value* Color::red() const
+const mongoodm::UInt32Value* Color::red() const
 {
     if (!has_red()) {
         return NULL;
@@ -98,11 +97,11 @@ const Int32Value* Color::red() const
     return &(red_->GetValue());
 }
 
-Int32Value& Color::mutable_red()
+mongoodm::UInt32Value& Color::mutable_red()
 {
     if (!has_red()) {
         set_has_red();
-        red_= new Int32Field("red");
+        red_= new mongoodm::UInt32Field("red");
         AddField(red_, false);
     }
     return red_->GetValue();
@@ -117,7 +116,7 @@ void Color::clear_green()
     }
 }
 
-const Int32Value* Color::green() const
+const mongoodm::UInt32Value* Color::green() const
 {
     if (!has_green()) {
         return NULL;
@@ -125,11 +124,11 @@ const Int32Value* Color::green() const
     return &(green_->GetValue());
 }
 
-Int32Value& Color::mutable_green()
+mongoodm::UInt32Value& Color::mutable_green()
 {
     if (!has_green()) {
         set_has_green();
-        green_ = new Int32Field("green");
+        green_= new mongoodm::UInt32Field("green");
         AddField(green_, false);
     }
     return green_->GetValue();
@@ -144,7 +143,7 @@ void Color::clear_blue()
     }
 }
 
-const Int32Value* Color::blue() const
+const mongoodm::UInt32Value* Color::blue() const
 {
     if (!has_blue()) {
         return NULL;
@@ -152,13 +151,16 @@ const Int32Value* Color::blue() const
     return &(blue_->GetValue());
 }
 
-Int32Value& Color::mutable_blue()
+mongoodm::UInt32Value& Color::mutable_blue()
 {
     if (!has_blue()) {
         set_has_blue();
-        blue_ = new Int32Field("blue");
+        blue_= new mongoodm::UInt32Field("blue");
         AddField(blue_, false);
     }
     return blue_->GetValue();
 }
+
+
+}  // namespace entity
 

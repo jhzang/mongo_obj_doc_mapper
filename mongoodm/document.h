@@ -45,8 +45,8 @@ public:
 
     Document(const Document &other);
     Document& operator=(const Document &other);
+    virtual void CopyFrom(const Value &other);
     virtual Value* Clone() const { return new Document(*this); }
-    virtual void CopyFrom(const Document &other);
     void Clear();
 
     static Document* ParseJsonString(const char *str, size_t size = 0);

@@ -1,11 +1,12 @@
-#ifndef COLOR_H_
-#define COLOR_H_
+#ifndef ENTITY_COLOR_H_
+#define ENTITY_COLOR_H_
 
 #include <mongoodm/mongoodm.h>
 
-using namespace mongoodm;
 
-class Color : public Document
+namespace entity {
+
+class Color : public mongoodm::Document
 {
 private:
     enum {
@@ -16,62 +17,68 @@ private:
 
 public:
     Color();
-    ~Color();
+    virtual ~Color();
 
-    Color(const Color &other);
-    Color& operator=(const Color &other);
-    void CopyFrom(const Color &other);
+    Color(const Color &other) { CopyFrom(other); }
+    Color& operator=(const Color &other) { CopyFrom(other); return *this; }
+    virtual void CopyFrom(const Value &other);
+    virtual Value* Clone() const { return new Color(*this); }
     void Clear();
 
     virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
     // red
-    bool has_red() const { return has_bit(kRedFieldNumber); }
+    inline bool has_red() const { return has_bit(kRedFieldNumber); }
     void clear_red();
-    const Int32Value* red() const;
-    Int32Value& mutable_red();
-    void set_red(int32_t value) { mutable_red().SetValue(value); }
+    const mongoodm::UInt32Value* red() const;
+    mongoodm::UInt32Value& mutable_red();
+    inline uint32_t red_value() const { return red_->GetValue().GetValue(); }
+    inline void set_red(uint32_t value) { mutable_red().SetValue(value); }
 
     // green
-    bool has_green() const { return has_bit(kGreenFieldNumber); }
+    inline bool has_green() const { return has_bit(kGreenFieldNumber); }
     void clear_green();
-    const Int32Value* green() const;
-    Int32Value& mutable_green();
-    void set_green(int32_t value) { mutable_green().SetValue(value); }
+    const mongoodm::UInt32Value* green() const;
+    mongoodm::UInt32Value& mutable_green();
+    inline uint32_t green_value() const { return green_->GetValue().GetValue(); }
+    inline void set_green(uint32_t value) { mutable_green().SetValue(value); }
 
     // blue
-    bool has_blue() const { return has_bit(kBlueFieldNumber); }
+    inline bool has_blue() const { return has_bit(kBlueFieldNumber); }
     void clear_blue();
-    const Int32Value* blue() const;
-    Int32Value& mutable_blue();
-    void set_blue(int32_t value) { mutable_blue().SetValue(value); }
+    const mongoodm::UInt32Value* blue() const;
+    mongoodm::UInt32Value& mutable_blue();
+    inline uint32_t blue_value() const { return blue_->GetValue().GetValue(); }
+    inline void set_blue(uint32_t value) { mutable_blue().SetValue(value); }
 
 private:
-    bool has_bit(unsigned int field_number) const
+    inline bool has_bit(unsigned int field_number) const
     {
         return (_has_bits_ & ((unsigned long long)1 << field_number)) != 0;
     }
-    void set_has_bit(unsigned int field_number)
+    inline void set_has_bit(unsigned int field_number)
     {
         _has_bits_ |= ((unsigned long long)1 << field_number);
     }
-    void clear_has_bit(unsigned int field_number)
+    inline void clear_has_bit(unsigned int field_number)
     {
         _has_bits_ &= ~((unsigned long long)1 << field_number);
     }
-    void set_has_red() { set_has_bit(kRedFieldNumber); }
-    void clear_has_red() { clear_has_bit(kRedFieldNumber); }
-    void set_has_green() { set_has_bit(kGreenFieldNumber); }
-    void clear_has_green() { clear_has_bit(kGreenFieldNumber); }
-    void set_has_blue() { set_has_bit(kBlueFieldNumber); }
-    void clear_has_blue() { clear_has_bit(kBlueFieldNumber); }
+    inline void set_has_red() { set_has_bit(kRedFieldNumber); }
+    inline void clear_has_red() { clear_has_bit(kRedFieldNumber); }
+    inline void set_has_green() { set_has_bit(kGreenFieldNumber); }
+    inline void clear_has_green() { clear_has_bit(kGreenFieldNumber); }
+    inline void set_has_blue() { set_has_bit(kBlueFieldNumber); }
+    inline void clear_has_blue() { clear_has_bit(kBlueFieldNumber); }
 
 private:
-    Int32Field *red_;
-    Int32Field *green_;
-    Int32Field *blue_;
+    mongoodm::UInt32Field *red_;
+    mongoodm::UInt32Field *green_;
+    mongoodm::UInt32Field *blue_;
 
     unsigned long long _has_bits_;
 };
 
-#endif  // COLOR_H_
+}  // namespace entity
+
+#endif  // ENTITY_COLOR_H_

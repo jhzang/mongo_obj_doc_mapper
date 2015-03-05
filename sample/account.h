@@ -1,135 +1,14 @@
-#ifndef ACCOUNT_H_
-#define ACCOUNT_H_
+#ifndef ENTITY_ACCOUNT_H_
+#define ENTITY_ACCOUNT_H_
 
 #include <mongoodm/mongoodm.h>
+#include "account_name.h"
+#include "color.h"
+#include "account_clothes_member.h"
 
-using namespace mongoodm;
+namespace entity {
 
-class Account_Name : public Document
-{
-private:
-    enum {
-        kFirstNameFieldNumber = 0,
-        kLastNameFieldNumber = 1,
-    };
-
-public:
-    Account_Name();
-    ~Account_Name();
-
-    Account_Name(const Account_Name &other);
-    Account_Name& operator=(const Account_Name &other);
-    void CopyFrom(const Account_Name &other);
-    void Clear();
-
-    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
-
-    // first_name
-    bool has_first_name() const { return has_bit(kFirstNameFieldNumber); }
-    void clear_first_name();
-    const StringValue* first_name() const;
-    StringValue& mutable_first_name();
-    void set_first_name(const std::string &value) { mutable_first_name().SetValue(value); }
-
-    // last_name
-    bool has_last_name() const { return has_bit(kLastNameFieldNumber); }
-    void clear_last_name();
-    const StringValue* last_name() const;
-    StringValue& mutable_last_name();
-    void set_last_name(const std::string &value) { mutable_last_name().SetValue(value); }
-
-private:
-    bool has_bit(unsigned int field_number) const
-    {
-        return (_has_bits_ & ((unsigned long long)1 << field_number)) != 0;
-    }
-    void set_has_bit(unsigned int field_number)
-    {
-        _has_bits_ |= ((unsigned long long)1 << field_number);
-    }
-    void clear_has_bit(unsigned int field_number)
-    {
-        _has_bits_ &= ~((unsigned long long)1 << field_number);
-    }
-    void set_has_first_name() { set_has_bit(kFirstNameFieldNumber); }
-    void clear_has_first_name() { clear_has_bit(kFirstNameFieldNumber); }
-    void set_has_last_name() { set_has_bit(kLastNameFieldNumber); }
-    void clear_has_last_name() { clear_has_bit(kLastNameFieldNumber); }
-
-private:
-    StringField *first_name_;
-    StringField *last_name_;
-
-    unsigned long long _has_bits_;
-};
-
-
-class Color;
-
-class Account_Clothes_Member : public Document
-{
-private:
-    enum {
-        kNameFieldNumber = 0,
-        kColorsFieldNumber = 1,
-    };
-
-public:
-    Account_Clothes_Member();
-    ~Account_Clothes_Member();
-
-    Account_Clothes_Member(const Account_Clothes_Member &other);
-    Account_Clothes_Member& operator=(const Account_Clothes_Member &other);
-    void CopyFrom(const Account_Clothes_Member &other);
-    void Clear();
-
-    virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
-
-    // name
-    bool has_name() const { return has_bit(kNameFieldNumber); }
-    void clear_name();
-    const StringValue* name() const;
-    StringValue& mutable_name();
-    void set_name(const std::string &value) { mutable_name().SetValue(value); }
-
-    // colors
-    bool has_colors() const { return has_bit(kColorsFieldNumber); }
-    void clear_colors();
-    bool colors_size() const;
-    const Color* colors(size_t index) const;
-    Color* mutable_colors(size_t index);
-    void add_colors_member(const Color &value);
-    bool del_colors_member(size_t index);
-    bool set_colors_member(size_t index, const Color &value);
-    GenericArrayValue<Color>& mutable_colors();
-
-private:
-    bool has_bit(unsigned int field_number) const
-    {
-        return (_has_bits_ & ((unsigned long long)1 << field_number)) != 0;
-    }
-    void set_has_bit(unsigned int field_number)
-    {
-        _has_bits_ |= ((unsigned long long)1 << field_number);
-    }
-    void clear_has_bit(unsigned int field_number)
-    {
-        _has_bits_ &= ~((unsigned long long)1 << field_number);
-    }
-    void set_has_name() { set_has_bit(kNameFieldNumber); }
-    void clear_has_name() { clear_has_bit(kNameFieldNumber); }
-    void set_has_colors() { set_has_bit(kColorsFieldNumber); }
-    void clear_has_colors() { clear_has_bit(kColorsFieldNumber); }
-
-private:
-    StringField *name_;
-    ArrayField<Color> *colors_;
-
-    unsigned long long _has_bits_;
-};
-
-
-class Account : public Document
+class Account : public mongoodm::Document
 {
 private:
     enum {
@@ -137,194 +16,219 @@ private:
         kUseridFieldNumber = 1,
         kUsernameFieldNumber = 2,
         kNameFieldNumber = 3,
-        kMaleFieldNumber = 4,
-        kHeightFieldNumber = 5,
-        kAgeFieldNumber = 6,
-        kBirthDateFieldNumber = 7,
-        kRetireDateFieldNumber = 8,
-        kDeathDateFieldNumber = 9,
-        kPhotoFieldNumber = 10,
-        kTitlesFieldNumber = 11,
-        kClothesFieldNumber = 12,
-        //kCompanyFieldNumber = 13,
+        kFavoriteColorFieldNumber = 4,
+        kMaleFieldNumber = 5,
+        kHeightFieldNumber = 6,
+        kAgeFieldNumber = 7,
+        kBirthDateFieldNumber = 8,
+        kRetireDateFieldNumber = 9,
+        kDeathDateFieldNumber = 10,
+        kPhotoFieldNumber = 11,
+        kTitlesFieldNumber = 12,
+        kClothesFieldNumber = 13,
+        kCompanyFieldNumber = 14,
     };
 
 public:
     Account();
-    ~Account();
+    virtual ~Account();
 
-    Account(const Account &other);
-    Account& operator=(const Account &other);
-    void CopyFrom(const Account &other);
+    Account(const Account &other) { CopyFrom(other); }
+    Account& operator=(const Account &other) { CopyFrom(other); return *this; }
+    virtual void CopyFrom(const Value &other);
+    virtual Value* Clone() const { return new Account(*this); }
     void Clear();
 
     virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
     // _id
-    bool has__id() const { return has_bit(k_idFieldNumber); }
+    inline bool has__id() const { return has_bit(k_idFieldNumber); }
     void clear__id();
-    const ObjectIdValue* _id() const;
-    ObjectIdValue& mutable__id();
-    void set__id(const std::string &value) { mutable__id().SetValue(value); }
+    const mongoodm::ObjectIdValue* _id() const;
+    mongoodm::ObjectIdValue& mutable__id();
+    inline std::string _id_value() const { return _id_->GetValue().GetValue(); }
+    inline void set__id(const std::string &value) { mutable__id().SetValue(value); }
 
     // userid
-    bool has_userid() const { return has_bit(kUseridFieldNumber); }
+    inline bool has_userid() const { return has_bit(kUseridFieldNumber); }
     void clear_userid();
-    const UInt64Value* userid() const;
-    UInt64Value& mutable_userid();
-    void set_userid(uint64_t value) { mutable_userid().SetValue(value); }
+    const mongoodm::UInt64Value* userid() const;
+    mongoodm::UInt64Value& mutable_userid();
+    inline uint64_t userid_value() const { return userid_->GetValue().GetValue(); }
+    inline void set_userid(uint64_t value) { mutable_userid().SetValue(value); }
 
     // username
-    bool has_username() const { return has_bit(kUsernameFieldNumber); }
+    inline bool has_username() const { return has_bit(kUsernameFieldNumber); }
     void clear_username();
-    const StringValue* username() const;
-    StringValue& mutable_username();
-    void set_username(const std::string &value) { mutable_username().SetValue(value); }
+    const mongoodm::StringValue* username() const;
+    mongoodm::StringValue& mutable_username();
+    inline std::string username_value() const { return username_->GetValue().GetValue(); }
+    inline void set_username(const std::string &value) { mutable_username().SetValue(value); }
 
     // name
-    bool has_name() const { return has_bit(kNameFieldNumber); }
+    inline bool has_name() const { return has_bit(kNameFieldNumber); }
     void clear_name();
-    const Account_Name* name() const;
-    Account_Name& mutable_name();
+    const Account_name* name() const;
+    Account_name& mutable_name();
+
+    // favorite_color
+    inline bool has_favorite_color() const { return has_bit(kFavoriteColorFieldNumber); }
+    void clear_favorite_color();
+    const Color* favorite_color() const;
+    Color& mutable_favorite_color();
 
     // male
-    bool has_male() const { return has_bit(kMaleFieldNumber); }
+    inline bool has_male() const { return has_bit(kMaleFieldNumber); }
     void clear_male();
-    const BoolValue* male() const;
-    BoolValue& mutable_male();
-    void set_male(bool value) { mutable_male().SetValue(value); }
+    const mongoodm::BoolValue* male() const;
+    mongoodm::BoolValue& mutable_male();
+    inline bool male_value() const { return male_->GetValue().GetValue(); }
+    inline void set_male(bool value) { mutable_male().SetValue(value); }
 
     // height
-    bool has_height() const { return has_bit(kHeightFieldNumber); }
+    inline bool has_height() const { return has_bit(kHeightFieldNumber); }
     void clear_height();
-    const DoubleValue* height() const;
-    DoubleValue& mutable_height();
-    void set_height(double value) { mutable_height().SetValue(value); }
+    const mongoodm::DoubleValue* height() const;
+    mongoodm::DoubleValue& mutable_height();
+    inline double height_value() const { return height_->GetValue().GetValue(); }
+    inline void set_height(double value) { mutable_height().SetValue(value); }
 
     // age
-    bool has_age() const { return has_bit(kAgeFieldNumber); }
+    inline bool has_age() const { return has_bit(kAgeFieldNumber); }
     void clear_age();
-    const UInt32Value* age() const;
-    UInt32Value& mutable_age();
-    void set_age(uint32_t value) { mutable_age().SetValue(value); }
+    const mongoodm::UInt32Value* age() const;
+    mongoodm::UInt32Value& mutable_age();
+    inline uint32_t age_value() const { return age_->GetValue().GetValue(); }
+    inline void set_age(uint32_t value) { mutable_age().SetValue(value); }
 
     // birth_date
-    bool has_birth_date() const { return has_bit(kBirthDateFieldNumber); }
+    inline bool has_birth_date() const { return has_bit(kBirthDateFieldNumber); }
     void clear_birth_date();
-    const DateTimeValue* birth_date() const;
-    DateTimeValue& mutable_birth_date();
-    void set_birth_date(time_t t) { mutable_birth_date().SetTime(t); }
-    void set_birth_date(struct timeval &tv) { mutable_birth_date().SetTimeValue(tv); }
+    const mongoodm::DateTimeValue* birth_date() const;
+    mongoodm::DateTimeValue& mutable_birth_date();
+    inline time_t birth_date_value() const { return birth_date_->GetValue().GetTime(); }
+    inline void set_birth_date(time_t t) { mutable_birth_date().SetTime(t); }
+    inline void set_birth_date(struct timeval &tv) { mutable_birth_date().SetTimeValue(tv); }
 
     // retire_date
-    bool has_retire_date() const { return has_bit(kRetireDateFieldNumber); }
+    inline bool has_retire_date() const { return has_bit(kRetireDateFieldNumber); }
     void clear_retire_date();
-    const DateTimeValue* retire_date() const;
-    DateTimeValue& mutable_retire_date();
-    void set_retire_date(time_t t) { mutable_retire_date().SetTime(t); }
-    void set_retire_date(struct timeval &tv) { mutable_retire_date().SetTimeValue(tv); }
+    const mongoodm::DateTimeValue* retire_date() const;
+    mongoodm::DateTimeValue& mutable_retire_date();
+    inline time_t retire_date_value() const { return retire_date_->GetValue().GetTime(); }
+    inline void set_retire_date(time_t t) { mutable_retire_date().SetTime(t); }
+    inline void set_retire_date(struct timeval &tv) { mutable_retire_date().SetTimeValue(tv); }
 
     // death_date
-    bool has_death_date() const { return has_bit(kDeathDateFieldNumber); }
+    inline bool has_death_date() const { return has_bit(kDeathDateFieldNumber); }
     void clear_death_date();
-    const DateTimeValue* death_date() const;
-    DateTimeValue& mutable_death_date();
-    void set_death_date(time_t t) { mutable_death_date().SetTime(t); }
-    void set_death_date(struct timeval &tv) { mutable_death_date().SetTimeValue(tv); }
+    const mongoodm::DateTimeValue* death_date() const;
+    mongoodm::DateTimeValue& mutable_death_date();
+    inline time_t death_date_value() const { return death_date_->GetValue().GetTime(); }
+    inline void set_death_date(time_t t) { mutable_death_date().SetTime(t); }
+    inline void set_death_date(struct timeval &tv) { mutable_death_date().SetTimeValue(tv); }
 
     // photo
-    bool has_photo() const { return has_bit(kPhotoFieldNumber); }
+    inline bool has_photo() const { return has_bit(kPhotoFieldNumber); }
     void clear_photo();
-    const BinaryValue* photo() const;
-    BinaryValue& mutable_photo();
-    void set_photo(bson_subtype_t subtype, const std::string &data) { mutable_photo().SetValue(subtype, data); }
+    const mongoodm::BinaryValue* photo() const;
+    mongoodm::BinaryValue& mutable_photo();
+    inline void set_photo(bson_subtype_t subtype, const std::string &data) { mutable_photo().SetValue(subtype, data); }
 
     // titles
-    bool has_titles() const { return has_bit(kTitlesFieldNumber); }
-    bool titles_size() const;
+    inline bool has_titles() const { return has_bit(kTitlesFieldNumber); }
     void clear_titles();
-    const StringValue* titles(size_t index) const;
-    StringValue* mutable_titles(size_t index);
-    void add_titles_member(const StringValue &value);
+    int titles_size() const;
+    const mongoodm::StringValue* titles(size_t index) const;
+    mongoodm::StringValue* mutable_titles(size_t index);
+    mongoodm::StringValue& add_titles_member();
     bool del_titles_member(size_t index);
-    bool set_titles_member(size_t index, const StringValue &value);
-    GenericArrayValue<StringValue>& mutable_titles();
+    mongoodm::GenericArrayValue<mongoodm::StringValue>* titles();
+    mongoodm::GenericArrayValue<mongoodm::StringValue>& mutable_titles();
 
     // clothes
-    bool has_clothes() const { return has_bit(kClothesFieldNumber); }
-    bool clothes_size() const;
+    inline bool has_clothes() const { return has_bit(kClothesFieldNumber); }
     void clear_clothes();
-    const Account_Clothes_Member* clothes(size_t index) const;
-    Account_Clothes_Member* mutable_clothes(size_t index);
-    void add_clothes_member(const Account_Clothes_Member &value);
+    int clothes_size() const;
+    const Account_clothes_Member* clothes(size_t index) const;
+    Account_clothes_Member* mutable_clothes(size_t index);
+    Account_clothes_Member& add_clothes_member();
     bool del_clothes_member(size_t index);
-    bool set_clothes_member(size_t index, const Account_Clothes_Member &value);
-    GenericArrayValue<Account_Clothes_Member>& mutable_clothes();
+    mongoodm::GenericArrayValue<Account_clothes_Member>* clothes();
+    mongoodm::GenericArrayValue<Account_clothes_Member>& mutable_clothes();
 
-    //// company: ref?
-    //bool has_company() const { return has_bit(kCompanyFieldNumber); }
-    //void clear_company();
-    //void set_company(const std::string &value);
+    // company
+    inline bool has_company() const { return has_bit(kCompanyFieldNumber); }
+    void clear_company();
+    const mongoodm::ObjectIdValue* company() const;
+    mongoodm::ObjectIdValue& mutable_company();
+    inline std::string company_value() const { return company_->GetValue().GetValue(); }
+    inline void set_company(const std::string &value) { mutable_company().SetValue(value); }
 
 private:
-    bool has_bit(unsigned int field_number) const
+    inline bool has_bit(unsigned int field_number) const
     {
         return (_has_bits_ & ((unsigned long long)1 << field_number)) != 0;
     }
-    void set_has_bit(unsigned int field_number)
+    inline void set_has_bit(unsigned int field_number)
     {
         _has_bits_ |= ((unsigned long long)1 << field_number);
     }
-    void clear_has_bit(unsigned int field_number)
+    inline void clear_has_bit(unsigned int field_number)
     {
         _has_bits_ &= ~((unsigned long long)1 << field_number);
     }
-    void set_has__id() { set_has_bit(k_idFieldNumber); }
-    void clear_has__id() { clear_has_bit(k_idFieldNumber); }
-    void set_has_userid() { set_has_bit(kUseridFieldNumber); }
-    void clear_has_userid() { clear_has_bit(kUseridFieldNumber); }
-    void set_has_username() { set_has_bit(kUsernameFieldNumber); }
-    void clear_has_username() { clear_has_bit(kUsernameFieldNumber); }
-    void set_has_name() { set_has_bit(kNameFieldNumber); }
-    void clear_has_name() { clear_has_bit(kNameFieldNumber); }
-    void set_has_male() { set_has_bit(kMaleFieldNumber); }
-    void clear_has_male() { clear_has_bit(kMaleFieldNumber); }
-    void set_has_height() { set_has_bit(kHeightFieldNumber); }
-    void clear_has_height() { clear_has_bit(kHeightFieldNumber); }
-    void set_has_age() { set_has_bit(kAgeFieldNumber); }
-    void clear_has_age() { clear_has_bit(kAgeFieldNumber); }
-    void set_has_birth_date() { set_has_bit(kBirthDateFieldNumber); }
-    void clear_has_birth_date() { clear_has_bit(kBirthDateFieldNumber); }
-    void set_has_retire_date() { set_has_bit(kRetireDateFieldNumber); }
-    void clear_has_retire_date() { clear_has_bit(kRetireDateFieldNumber); }
-    void set_has_death_date() { set_has_bit(kDeathDateFieldNumber); }
-    void clear_has_death_date() { clear_has_bit(kDeathDateFieldNumber); }
-    void set_has_photo() { set_has_bit(kPhotoFieldNumber); }
-    void clear_has_photo() { clear_has_bit(kPhotoFieldNumber); }
-    void set_has_titles() { set_has_bit(kTitlesFieldNumber); }
-    void clear_has_titles() { clear_has_bit(kTitlesFieldNumber); }
-    void set_has_clothes() { set_has_bit(kClothesFieldNumber); }
-    void clear_has_clothes() { clear_has_bit(kClothesFieldNumber); }
-    //void set_has_company() { set_has_bit(kCompanyFieldNumber); }
-    //void clear_has_company() { clear_has_bit(kCompanyFieldNumber); }
+    inline void set_has__id() { set_has_bit(k_idFieldNumber); }
+    inline void clear_has__id() { clear_has_bit(k_idFieldNumber); }
+    inline void set_has_userid() { set_has_bit(kUseridFieldNumber); }
+    inline void clear_has_userid() { clear_has_bit(kUseridFieldNumber); }
+    inline void set_has_username() { set_has_bit(kUsernameFieldNumber); }
+    inline void clear_has_username() { clear_has_bit(kUsernameFieldNumber); }
+    inline void set_has_name() { set_has_bit(kNameFieldNumber); }
+    inline void clear_has_name() { clear_has_bit(kNameFieldNumber); }
+    inline void set_has_favorite_color() { set_has_bit(kFavoriteColorFieldNumber); }
+    inline void clear_has_favorite_color() { clear_has_bit(kFavoriteColorFieldNumber); }
+    inline void set_has_male() { set_has_bit(kMaleFieldNumber); }
+    inline void clear_has_male() { clear_has_bit(kMaleFieldNumber); }
+    inline void set_has_height() { set_has_bit(kHeightFieldNumber); }
+    inline void clear_has_height() { clear_has_bit(kHeightFieldNumber); }
+    inline void set_has_age() { set_has_bit(kAgeFieldNumber); }
+    inline void clear_has_age() { clear_has_bit(kAgeFieldNumber); }
+    inline void set_has_birth_date() { set_has_bit(kBirthDateFieldNumber); }
+    inline void clear_has_birth_date() { clear_has_bit(kBirthDateFieldNumber); }
+    inline void set_has_retire_date() { set_has_bit(kRetireDateFieldNumber); }
+    inline void clear_has_retire_date() { clear_has_bit(kRetireDateFieldNumber); }
+    inline void set_has_death_date() { set_has_bit(kDeathDateFieldNumber); }
+    inline void clear_has_death_date() { clear_has_bit(kDeathDateFieldNumber); }
+    inline void set_has_photo() { set_has_bit(kPhotoFieldNumber); }
+    inline void clear_has_photo() { clear_has_bit(kPhotoFieldNumber); }
+    inline void set_has_titles() { set_has_bit(kTitlesFieldNumber); }
+    inline void clear_has_titles() { clear_has_bit(kTitlesFieldNumber); }
+    inline void set_has_clothes() { set_has_bit(kClothesFieldNumber); }
+    inline void clear_has_clothes() { clear_has_bit(kClothesFieldNumber); }
+    inline void set_has_company() { set_has_bit(kCompanyFieldNumber); }
+    inline void clear_has_company() { clear_has_bit(kCompanyFieldNumber); }
 
 private:
-    ObjectIdField *_id_;
-    UInt64Field *userid_;
-    StringField *username_;
-    GenericField<Account_Name> *name_;
-    BoolField *male_;
-    DoubleField *height_;
-    UInt32Field *age_;
-    DateTimeField *birth_date_;
-    DateTimeField *retire_date_;
-    DateTimeField *death_date_;
-    BinaryField *photo_;
-    ArrayField<StringValue> *titles_;
-    ArrayField<Account_Clothes_Member> *clothes_;
-    //ObjectIdField *company_;  // reference field
+    mongoodm::ObjectIdField *_id_;
+    mongoodm::UInt64Field *userid_;
+    mongoodm::StringField *username_;
+    mongoodm::GenericField<Account_name> *name_;
+    mongoodm::GenericField<Color> *favorite_color_;
+    mongoodm::BoolField *male_;
+    mongoodm::DoubleField *height_;
+    mongoodm::UInt32Field *age_;
+    mongoodm::DateTimeField *birth_date_;
+    mongoodm::DateTimeField *retire_date_;
+    mongoodm::DateTimeField *death_date_;
+    mongoodm::BinaryField *photo_;
+    mongoodm::ArrayField<mongoodm::StringValue> *titles_;
+    mongoodm::ArrayField<Account_clothes_Member> *clothes_;
+    mongoodm::ObjectIdField *company_;
 
     unsigned long long _has_bits_;
 };
 
-#endif  // ACCOUNT_H_
+}  // namespace entity
+
+#endif  // ENTITY_ACCOUNT_H_

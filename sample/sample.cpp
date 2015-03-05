@@ -11,7 +11,7 @@ int main()
     std::string db_name = "test";
     std::string collection_name = "sample";
 
-    Account acc0;
+    entity::Account acc0;
 
     mongoc_init();
 
@@ -64,7 +64,7 @@ int main()
 	collection->Drop();
 
     std::cout << "------Inserting into account------" << std::endl;
-    Account acc = acc0;
+    entity::Account acc = acc0;
     acc.clear__id();
     acc.mutable_age().SetValue(10);
     if (!collection->InsertDocument(&acc)) {
@@ -74,7 +74,7 @@ int main()
         return 2;
     }
     std::cout << "------Finding in account------" << std::endl;
-    std::vector<Account*> accounts;
+    std::vector<entity::Account*> accounts;
     int count = collection->FindDocuments(accounts, "{\"age\":10}");
     if (count == 0) {
         std::cout << "No documents in test.account" << std::endl;
@@ -82,7 +82,7 @@ int main()
 		pool.Push(client);
         return 3;
     }
-    for (std::vector<Account*>::iterator it = accounts.begin(); it != accounts.end(); ++it) {
+    for (std::vector<entity::Account*>::iterator it = accounts.begin(); it != accounts.end(); ++it) {
         std::cout << (*it)->ToJsonString() << std::endl;
         std::cout << "---Updating " << (*it)->GetIdField()->GetValue()->ToJsonString() << "---" << std::endl;
         (*it)->mutable_height().SetValue(2.11);
@@ -94,7 +94,7 @@ int main()
             std::cout << (*it)->ToJsonString() << std::endl;
         }
     }
-    for (std::vector<Account*>::iterator it = accounts.begin(); it != accounts.end(); ++it) {
+    for (std::vector<entity::Account*>::iterator it = accounts.begin(); it != accounts.end(); ++it) {
         delete *it;
         *it = NULL;
     }

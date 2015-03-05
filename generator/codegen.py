@@ -104,20 +104,26 @@ document_h_field_number_def_template = '''\
 
 document_h_basic_field_accessor_template = '''\
     // ${field_name}
-    bool has_${field_name}() const { return has_bit(${field_number_tag}); }
+    inline bool has_${field_name}() const { return has_bit(${field_number_tag}); }
     void clear_${field_name}();
     const ${field_value_class_name}* ${field_name}() const;
     ${field_value_class_name}& mutable_${field_name}();
-    ${field_value_raw_type} ${field_name}_value() const { return ${field_name}_->GetValue().GetValue(); }
+'''
+document_h_basic_field_raw_getter_template = '''\
+    inline ${field_value_raw_type} ${field_name}_value() const { return ${field_name}_->GetValue().GetValue(); }
+'''
+
+document_h_datetime_field_raw_getter_template = '''\
+    inline time_t ${field_name}_value() const { return ${field_name}_->GetValue().GetTime(); }
 '''
 
 document_h_basic_field_setter_template = '''\
-    void set_${field_name}(${field_setter_params}) { mutable_${field_name}().SetValue(${field_setter_args}); }
+    inline void set_${field_name}(${field_setter_params}) { mutable_${field_name}().SetValue(${field_setter_args}); }
 '''
 
 document_h_datetime_field_setter_template = '''\
-    void set_${field_name}(time_t t) { mutable_${field_name}().SetTime(t); }
-    void set_${field_name}(struct timeval &tv) { mutable_${field_name}().SetTimeValue(tv); }
+    inline void set_${field_name}(time_t t) { mutable_${field_name}().SetTime(t); }
+    inline void set_${field_name}(struct timeval &tv) { mutable_${field_name}().SetTimeValue(tv); }
 '''
 
 document_cpp_basic_field_method_template = '''\
@@ -151,9 +157,9 @@ ${field_value_class_name}& ${class_name}::mutable_${field_name}()
 
 document_h_array_field_accessor_template = '''\
     // ${field_name}
-    bool has_${field_name}() const { return has_bit(${field_number_tag}); }
+    inline bool has_${field_name}() const { return has_bit(${field_number_tag}); }
     void clear_${field_name}();
-    bool ${field_name}_size() const;
+    int ${field_name}_size() const;
     const ${array_member_class_name}* ${field_name}(size_t index) const;
     ${array_member_class_name}* mutable_${field_name}(size_t index);
     ${array_member_class_name}& add_${field_name}_member();
@@ -163,7 +169,7 @@ document_h_array_field_accessor_template = '''\
 '''
 
 document_cpp_array_field_method_template = '''\
-bool ${class_name}::${field_name}_size() const
+int ${class_name}::${field_name}_size() const
 {
     return has_${field_name}() ? ${field_name}_->GetValue().GetSize() : 0;
 }
@@ -233,8 +239,8 @@ ${field_value_class_name}& ${class_name}::mutable_${field_name}()
 '''
 
 document_h_field_bit_method_template = '''\
-    void set_has_${field_name}() { set_has_bit(${field_number_tag}); }
-    void clear_has_${field_name}() { clear_has_bit(${field_number_tag}); }\
+    inline void set_has_${field_name}() { set_has_bit(${field_number_tag}); }
+    inline void clear_has_${field_name}() { clear_has_bit(${field_number_tag}); }\
 '''
 
 document_h_field_var_def_template = '''\
@@ -259,24 +265,25 @@ public:
     ${class_name}();
     virtual ~${class_name}();
 
-    ${class_name}(const ${class_name} &other);
-    ${class_name}& operator=(const ${class_name} &other);
-    void CopyFrom(const ${class_name} &other);
+    ${class_name}(const ${class_name} &other) { CopyFrom(other); }
+    ${class_name}& operator=(const ${class_name} &other) { CopyFrom(other); return *this; }
+    virtual void CopyFrom(const Value &other);
+    virtual Value* Clone() const { return new ${class_name}(*this); }
     void Clear();
 
     virtual int ParseField(const std::string &name, const rapidjson::Value &json_value);
 
 ${field_accessors}
 private:
-    bool has_bit(unsigned int field_number) const
+    inline bool has_bit(unsigned int field_number) const
     {
         return (_has_bits_ & ((unsigned long long)1 << field_number)) != 0;
     }
-    void set_has_bit(unsigned int field_number)
+    inline void set_has_bit(unsigned int field_number)
     {
         _has_bits_ |= ((unsigned long long)1 << field_number);
     }
-    void clear_has_bit(unsigned int field_number)
+    inline void clear_has_bit(unsigned int field_number)
     {
         _has_bits_ &= ~((unsigned long long)1 << field_number);
     }
@@ -333,24 +340,21 @@ ${class_name}::~${class_name}()
     Clear();
 }
 
-${class_name}::${class_name}(const ${class_name} &other)
+void ${class_name}::CopyFrom(const Value &other)
 {
-    CopyFrom(other);
-}
-
-${class_name}& ${class_name}::operator=(const ${class_name} &other)
-{
-    if (this != &other) {
-        CopyFrom(other);
+    if (this == &other) {
+        return;
     }
-    return *this;
-}
 
-void ${class_name}::CopyFrom(const ${class_name} &other)
-{
     Clear();
+
     Document::CopyFrom(other);
-    _has_bits_ = other._has_bits_;
+    if (is_null_) {
+        return;
+    }
+
+    const ${class_name} &doc = dynamic_cast<const ${class_name}&>(other);
+    _has_bits_ = doc._has_bits_;
 ${copyfrom_fix_fields_section}
 }
 
@@ -420,6 +424,9 @@ def get_field_number_tag(field_name):
 def parse_document(document_element, document_type_name, is_embeded, documents):
     print 'Parsing document %s...' % document_type_name
     #xml.etree.cElementTree.dump(document_element)
+    if 'skip' in document_element.attrib and document_element.attrib['skip'] == 'true':
+        print 'Skipped'
+        return True
     document = {}
     document['name'] = document_type_name
     document['is_embeded'] = is_embeded
@@ -449,6 +456,7 @@ def parse_document(document_element, document_type_name, is_embeded, documents):
             else:
                 field['value_class_name'] = field['ref']
             field['class_name'] = 'mongoodm::GenericField<%s>' % field['value_class_name']
+            field['raw_value_type'] = field['value_class_name']
         elif field['type'] == 'array':
             if 'ref' in field_element.attrib:
                 field['ref'] = field_element.attrib['ref']
@@ -533,19 +541,25 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
         index += 1
         field_number_defs.append(field_number_def)
         # field_accessors
-        if field['type'] != 'array':
-            field_accessor = string.Template(document_h_basic_field_accessor_template).substitute(
-                    field_name=field['name'],
-                    field_value_class_name=field['value_class_name'],
-                    field_number_tag=get_field_number_tag(field['name']),
-                    field_value_raw_type=field['raw_value_type'])
-        else:
+        if field['type'] == 'array':
             field_accessor = string.Template(document_h_array_field_accessor_template).substitute(
                     field_name=field['name'],
                     field_value_class_name=field['value_class_name'],
                     array_member_class_name=field['array_member_class_name'],
                     field_number_tag=get_field_number_tag(field['name']))
-        # field setter
+        else:
+            field_accessor = string.Template(document_h_basic_field_accessor_template).substitute(
+                    field_name=field['name'],
+                    field_value_class_name=field['value_class_name'],
+                    field_number_tag=get_field_number_tag(field['name']))
+        if field['type'] == 'datetime':
+            field_accessor += string.Template(document_h_datetime_field_raw_getter_template).substitute(
+                    field_name=field['name'])
+        elif field['type'] in basic_data_type_dict and field['type'] not in ('document', 'binary'):
+            field_accessor += string.Template(document_h_basic_field_raw_getter_template).substitute(
+                    field_name=field['name'],
+                    field_value_raw_type=field['raw_value_type'])
+       # field setter
         if field['type'] == 'datetime':
             field_accessor += string.Template(document_h_datetime_field_setter_template).substitute(
                     field_name=field['name'])
@@ -594,9 +608,9 @@ def generate_document_code(document, namespace, output_dir, is_overwrite_mode):
     field_methods_impl_list = []
     for field in document['fields']:
         field_initiators_list.append('%s_(NULL)' % field['name'])
-        copyfrom_fix_fields_list.append('\tFIX_FIELD(%s, %s);' % (field['name'], field['class_name']))
+        copyfrom_fix_fields_list.append('    FIX_FIELD(%s, %s);' % (field['name'], field['class_name']))
         clear_fields_list.append('\t%s_ = NULL;' % field['name'])
-        parsefield_handle_fields_list.append('\tHANDLE_FIELD(%s, %s);' % (field['name'], field['class_name']))
+        parsefield_handle_fields_list.append('    HANDLE_FIELD(%s, %s);' % (field['name'], field['class_name']))
         if field['type'] != 'array':
             field_methods_impl_list.append(string.Template(document_cpp_basic_field_method_template).substitute(
                     class_name=document['class_name'],

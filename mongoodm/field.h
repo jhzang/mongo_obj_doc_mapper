@@ -29,8 +29,7 @@ namespace mongoodm {
 class Field
 {
 public:
-    Field() : value_(NULL) {}
-    Field(const std::string &name)
+    Field(const std::string &name = "")
         : name_(name), value_(NULL)
     {
     }
@@ -63,32 +62,34 @@ public:
         SetValue(other.value_, true);
     }
 
-    const std::string& GetName() const { return name_; }
-    ValueType GetValueType() const { return value_->GetType(); }
-    const Value* GetValue() const { return value_; }
-    Value* GetValue() { return value_; }
-    void SetName(const std::string &name) { name_ = name; }
-    void SetValue(const Value *value, bool clone = true)
+    virtual Field* Clone() const { return new Field(*this); }
+
+    inline const std::string& GetName() const { return name_; }
+    inline ValueType GetValueType() const { return value_->GetType(); }
+    inline const Value* GetValue() const { return value_; }
+    inline Value* GetValue() { return value_; }
+    inline void SetName(const std::string &name) { name_ = name; }
+    inline void SetValue(const Value *value, bool clone = true)
     {
         if (clone) {
             if (value_ == value) {
                 return;
             }
-            if (value_ != NULL) {
-                Value::SafeDelete(value_);
-            }
             if (value != NULL) {
-                value_ = value->Clone();
+                if (NULL == value_) {
+                    value_ = value->Clone();
+                }
+                else {
+                    value_->CopyFrom(*value);
+                }
+            }
+            else {
+                Value::SafeDelete(value_);
             }
         }
         else {
             value_ = const_cast<Value*>(value);
         }
-    }
-
-    virtual Field* Clone() const
-    {
-        return new Field(*this);
     }
 
     virtual std::string ToJsonString() const
@@ -116,13 +117,13 @@ public:
         }
     }
 
-    void SetNull()
+    inline void SetNull()
     {
         Value::SafeDelete(value_);
         value_ = NULL;
     }
 
-    bool IsNull() const { return value_ == NULL; }
+    inline bool IsNull() const { return value_ == NULL; }
 
 protected:
     std::string name_;
@@ -134,33 +135,47 @@ template <typename T_Value>
 class GenericField : public Field
 {
 public:
-    GenericField()
-    {
-        value_ = new T_Value();
-    }
-    GenericField(const std::string &name)
+    GenericField(const std::string &name = "")
         : Field(name)
     {
         value_ = new T_Value();
     }
-    virtual ~GenericField() {}
+    virtual ~GenericField()
+    {
+    }
 
-    const T_Value& GetValue() const
+    GenericField(const GenericField &other)
+    {
+        Field::CopyFrom(other);
+    }
+
+    GenericField& operator=(const GenericField &other)
+    {
+        Field::CopyFrom(other);
+		return *this;
+    }
+
+    virtual GenericField* Clone() const
+    {
+        return new GenericField(*this);
+    }
+
+    inline const T_Value& GetValue() const
     {
         return *((T_Value*)value_);
     }
 
-    T_Value& GetValue()
+    inline T_Value& GetValue()
     {
         return *((T_Value*)value_);
     }
 
-    void SetValue(const T_Value &value)
+    inline void SetValue(const T_Value &value)
     {
         *((T_Value*)value_) = value;
     }
 
-    bool FromJsonValue(const rapidjson::Value &json_value)
+    inline bool FromJsonValue(const rapidjson::Value &json_value)
     {
         return ((T_Value*)value_)->FromJsonValue(json_value);
     }
@@ -180,34 +195,31 @@ class Document;
 typedef GenericField<Document> DocumentField;
 
 template <typename T_Value>
-class ArrayField : public Field
+class ArrayField : public GenericField<GenericArrayValue<T_Value> >
 {
 public:
     ArrayField(const std::string &name = "")
-        : Field(name)
+        : GenericField<GenericArrayValue<T_Value> >(name)
     {
-        value_ = new GenericArrayValue<T_Value>();
     }
-    virtual ~ArrayField() {}
-
-    const GenericArrayValue<T_Value>& GetValue() const
+    virtual ~ArrayField()
     {
-        return *((GenericArrayValue<T_Value>*)value_);
     }
 
-    GenericArrayValue<T_Value>& GetValue()
+    ArrayField(const ArrayField &other)
     {
-        return *((GenericArrayValue<T_Value>*)value_);
+        Field::CopyFrom(other);
     }
 
-    void SetValue(const GenericArrayValue<T_Value> &value)
+    ArrayField& operator=(const ArrayField &other)
     {
-        *((GenericArrayValue<T_Value>*)value_) = value;
+        Field::CopyFrom(other);
+		return *this;
     }
 
-    bool FromJsonValue(const rapidjson::Value &json_value)
+    virtual ArrayField* Clone() const
     {
-        return ((GenericArrayValue<T_Value>*)value_)->FromJsonValue(json_value);
+        return new ArrayField(*this);
     }
 };  // class ArrayField
 

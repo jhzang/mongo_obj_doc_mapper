@@ -326,13 +326,19 @@ void ArrayValue::Clear()
     members_.clear();
 }
 
-void ArrayValue::CopyFrom(const ArrayValue &other)
+void ArrayValue::CopyFrom(const Value &other)
 {
+    if (this == &other) {
+        return;
+    }
+
     Clear();
 
-    is_null_ = other.is_null_;
+    Value::CopyFrom(other);
+
     if (!is_null_) {
-        for (ValueVector::const_iterator it = other.members_.begin(); it != other.members_.end(); ++it) {
+        const ArrayValue &array = dynamic_cast<const ArrayValue&>(other);
+        for (ValueVector::const_iterator it = array.members_.begin(); it != array.members_.end(); ++it) {
             members_.push_back((*it)->Clone());
         }
     }

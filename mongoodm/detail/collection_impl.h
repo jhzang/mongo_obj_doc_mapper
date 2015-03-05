@@ -62,6 +62,7 @@ int Collection::FindDocuments(
     while (mongoc_cursor_more(cursor) && mongoc_cursor_next(cursor, &d)) {
         size_t len = 0;
         char *str = bson_as_json(d, &len);
+        LOG_TRACE(str);
         T_Document *doc = new T_Document();
         if (!doc->FromJsonString(str, len)) {
             LOG_ERROR("[Collection.FindDocuments] Parsing error" << std::endl);
@@ -100,6 +101,7 @@ bool Collection::FindOneDocument(
         return false;
     }
     std::string &raw_str = raw_results[0];
+    LOG_TRACE(raw_str);
     if (!result.FromJsonString(raw_str.c_str(), raw_str.size())) {
         LOG_ERROR("[Collection.FindOneDocument] Parsing error" << std::endl);
         return false;

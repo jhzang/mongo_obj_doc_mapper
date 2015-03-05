@@ -44,17 +44,25 @@ Document::Document(const Document &other)
 
 Document& Document::operator=(const Document &other)
 {
-    if (this != &other) {
-        CopyFrom(other);
-    }
+    CopyFrom(other);
     return *this;
 }
 
-void Document::CopyFrom(const Document &other)
+void Document::CopyFrom(const Value &other)
 {
+    if (this == &other) {
+        return;
+    }
+
     Clear();
 
-    for (ConstFieldIterator cit = other.FieldBegin(); cit != other.FieldEnd(); ++cit) {
+    Value::CopyFrom(other);
+    if (is_null_) {
+        return;
+    }
+
+    const Document &doc = dynamic_cast<const Document&>(other);
+    for (ConstFieldIterator cit = doc.FieldBegin(); cit != doc.FieldEnd(); ++cit) {
         fields_.push_back((*cit)->Clone());
     }
 }

@@ -141,9 +141,6 @@ bool NumberValue<T_Number, value_type, bson_value_type>::BuildBson(bson_t *paren
             case BSON_TYPE_DOUBLE:
                 retflag = bson_append_double(parent, name.c_str(), name.size(), value_);
                 break;
-            case BSON_TYPE_DATE_TIME:
-                retflag = bson_append_time_t(parent, name.c_str(), name.size(), value_);
-                break;
             default:
                 assert(false);
         }

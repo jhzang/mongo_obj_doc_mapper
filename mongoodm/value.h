@@ -22,6 +22,7 @@
 #ifndef MONGOODM_VALUE_H_
 #define MONGOODM_VALUE_H_
 
+#include <cassert>
 #include <string>
 #include <vector>
 #include <bson.h>
@@ -54,11 +55,22 @@ public:
     Value(ValueType type) : type_(type), is_null_(false) {}
     virtual ~Value() {}
 
+    virtual void CopyFrom(const Value &other)
+    {
+        assert(type_ == other.type_);
+
+        if (this == &other) {
+            return;
+        }
+        is_null_ = other.is_null_;
+    }
+
+    virtual Value* Clone() const = 0;
+
     ValueType GetType() const { return type_; }
     virtual bool IsNull() const { return is_null_; }
     virtual void SetNull(bool value) { is_null_ = value; }
 
-    virtual Value* Clone() const = 0;
     virtual bool FromJsonValue(const rapidjson::Value &json_value) = 0;
     virtual std::string ToJsonString() const = 0;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const = 0;
@@ -84,10 +96,26 @@ public:
     NumberValue(T_Number value = 0) : Value(value_type), value_(value) {}
     virtual ~NumberValue() {}
 
-    T_Number GetValue() const { return value_; }
-    void SetValue(T_Number value) { value_ = value; is_null_ = false; }
+    virtual void CopyFrom(const Value &other)
+    {
+        if (this == &other) {
+            return;
+        }
+
+        Value::CopyFrom(other);
+        if (!is_null_) {
+            value_ = (dynamic_cast<const NumberValue&>(other)).value_;
+        }
+    }
 
     virtual Value* Clone() const { return new NumberValue(*this); }
+
+    inline T_Number GetValue() const { return value_; }
+    inline void SetValue(T_Number value)
+    {
+        value_ = value;
+        is_null_ = false;
+    }
 
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
     virtual std::string ToJsonString() const;
@@ -110,12 +138,28 @@ public:
     NumberValue(bool value = true) : Value(kBoolType), value_(value) {}
     virtual ~NumberValue() {}
 
-    bool GetValue() const { return value_; }
-    void SetValue(bool value) { value_ = value; is_null_ = false; }
+    virtual void CopyFrom(const Value &other)
+    {
+        if (this == &other) {
+            return;
+        }
+
+        Value::CopyFrom(other);
+        if (!is_null_) {
+            value_ = (dynamic_cast<const NumberValue&>(other)).value_;
+        }
+    }
 
     virtual Value* Clone() const
     {
         return const_cast<NumberValue<bool, kBoolType, BSON_TYPE_BOOL>*>(this);
+    }
+
+    inline bool GetValue() const { return value_; }
+    inline void SetValue(bool value)
+    {
+        value_ = value;
+        is_null_ = false;
     }
 
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
@@ -135,28 +179,45 @@ extern const BoolValue FalseValue;
  * @class DateTimeValue
  * @brief The raw value is in millisecond
  */
-class DateTimeValue : public NumberValue<int64_t, kDateTimeType, BSON_TYPE_DATE_TIME>
+class DateTimeValue : public Value
 {
 public:
-    DateTimeValue(time_t value = 0) : NumberValue(value) {}
+    DateTimeValue(time_t value = 0) : Value(kDateTimeType), value_(value * 1000) {}
+
+    virtual void CopyFrom(const Value &other)
+    {
+        if (this == &other) {
+            return;
+        }
+
+        Value::CopyFrom(other);
+        if (!is_null_) {
+            value_ = (dynamic_cast<const DateTimeValue&>(other)).value_;
+        }
+    }
+ 
+    virtual Value* Clone() const { return new DateTimeValue(*this); }
 
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
 
-    void SetTime(time_t t_s) { value_ = (int64_t)t_s * 1000; }
-    time_t GetTime() const { return value_ / 1000; }
-    void SetTimeValue(struct timeval &tv)
+    inline void SetTime(time_t t_s) { value_ = (int64_t)t_s * 1000; }
+    inline time_t GetTime() const { return value_ / 1000; }
+    inline void SetTimeValue(struct timeval &tv)
     {
         value_ = (int64_t)tv.tv_sec * 1000 + (int64_t)tv.tv_usec / 1000L;
     }
-    struct timeval GetTimeValue() const
+    inline struct timeval GetTimeValue() const
     {
         struct timeval tv = {0};
         tv.tv_sec = value_ / 1000;
         tv.tv_usec = (value_ - tv.tv_sec * 1000) * 1000;
         return tv;
     }
+
+protected:
+    int64_t value_;
 };
 
 
@@ -169,9 +230,30 @@ public:
     StringValue(const char *str, size_t size = 0);
     virtual ~StringValue() {}
 
-    const std::string& GetValue() const { return value_; }
-    void SetValue(const std::string &value) { value_ = value; is_null_ = false; }
-    void SetValue(const char *value, int n = -1)
+    virtual void CopyFrom(const Value &other)
+    {
+        if (this == &other) {
+            return;
+        }
+
+        Value::CopyFrom(other);
+        if (!is_null_) {
+            value_ = (dynamic_cast<const StringValue&>(other)).value_;
+        }
+    }
+
+    virtual Value* Clone() const
+    {
+        return new StringValue(*this);
+    }
+
+    inline const std::string& GetValue() const { return value_; }
+    inline void SetValue(const std::string &value)
+    {
+        value_ = value;
+        is_null_ = false;
+    }
+    inline void SetValue(const char *value, int n = -1)
     {
         if (NULL == value || 0 == n) {
             value_.clear();
@@ -185,7 +267,6 @@ public:
         is_null_ = false;
     }
 
-    virtual Value* Clone() const { return new StringValue(*this); }
     virtual void SetNull(bool value)
     {
         is_null_ = value;
@@ -213,20 +294,34 @@ public:
         , binary_data_(binary_data)
     {
     }
-    virtual ~BinaryValue() {}
+    virtual ~BinaryValue()
+    {
+    }
 
-    bson_subtype_t GetBinarySubtype() const { return binary_subtype_; }
-    const std::string& GetBinaryData() const { return binary_data_; }
-    void SetBinarySubtype(bson_subtype_t value) { binary_subtype_ = value; is_null_ = false; }
-    void SetBinaryData(const std::string &value) { binary_data_ = value; is_null_ = false; }
-    void SetValue(bson_subtype_t binary_subtype, const std::string &binary_data)
+    virtual void CopyFrom(const Value &other)
+    {
+        if (this == &other) {
+            return;
+        }
+
+        Value::CopyFrom(other);
+        if (!is_null_) {
+            const BinaryValue &bin = dynamic_cast<const BinaryValue&>(other);
+            binary_subtype_ = bin.binary_subtype_;
+            binary_data_ = bin.binary_data_;
+        }
+    }
+
+    virtual Value* Clone() const { return new BinaryValue(*this); }
+
+    inline bson_subtype_t GetSubtype() const { return binary_subtype_; }
+    inline const std::string& GetData() const { return binary_data_; }
+    inline void SetValue(bson_subtype_t binary_subtype, const std::string &binary_data)
     {
         is_null_ = false;
         binary_subtype_ = binary_subtype;
         binary_data_ = binary_data;
     }
-
-    virtual Value* Clone() const { return new BinaryValue(*this); }
 
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
     virtual std::string ToJsonString() const;
@@ -244,10 +339,26 @@ public:
     ObjectIdValue() : Value(kObjectIdType) {}
     virtual ~ObjectIdValue() {}
 
-    const std::string& GetValue() const { return value_; }
-    void SetValue(const std::string &value) { value_ = value; is_null_ = false; }
+    virtual void CopyFrom(const Value &other)
+    {
+        if (this == &other) {
+            return;
+        }
+
+        Value::CopyFrom(other);
+        if (!is_null_) {
+            value_ = (dynamic_cast<const ObjectIdValue&>(other)).value_;
+        }
+    }
 
     virtual Value* Clone() const { return new ObjectIdValue(*this); }
+
+    inline const std::string& GetValue() const { return value_; }
+    inline void SetValue(const std::string &value)
+    {
+        value_ = value;
+        is_null_ = false;
+    }
 
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
     virtual std::string ToJsonString() const;
@@ -273,28 +384,28 @@ public:
 
     ArrayValue& operator=(const ArrayValue &other)
     {
-        if (this != &other) {
-            CopyFrom(other);
-        }
+        CopyFrom(other);
         return *this;
     }
 
-    void Clear();
-    void CopyFrom(const ArrayValue &other);
-    size_t GetSize() const { return members_.size(); }
+    virtual void CopyFrom(const Value &other);
+
     virtual Value* Clone() const { return new ArrayValue(*this); }
 
-    Value* GetMember(size_t index)
+    void Clear();
+    inline size_t GetSize() const { return members_.size(); }
+
+    inline Value* GetMember(size_t index)
     {
         return index >= members_.size() ? NULL : members_[index];
     }
 
-    const Value* GetMember(size_t index) const
+    inline const Value* GetMember(size_t index) const
     {
         return index >= members_.size() ? NULL : members_[index];
     }
 
-    bool SetMember(size_t index, const Value *value, bool clone = true)
+    inline bool SetMember(size_t index, const Value *value, bool clone = true)
     {
         if (index >= members_.size() || NULL == value) {
             return false;
@@ -309,13 +420,13 @@ public:
         return true;
     }
 
-    void AddMember(const Value *value, bool clone = true)
+    inline void AddMember(const Value *value, bool clone = true)
     {
         is_null_ = false;
         members_.push_back(clone ? value->Clone() : const_cast<Value*>(value));
     }
 
-    bool DelMember(size_t index)
+    inline bool DelMember(size_t index)
     {
         if (index >= members_.size()) {
             return false;
@@ -345,16 +456,16 @@ public:
 
     GenericArrayValue(const GenericArrayValue &other)
     {
-        CopyFrom(other);
+        ArrayValue::CopyFrom(other);
     }
 
     GenericArrayValue& operator=(const GenericArrayValue &other)
     {
-        if (this != &other) {
-            CopyFrom(other);
-        }
+        ArrayValue::CopyFrom(other);
         return *this;
     }
+
+    virtual Value* Clone() const { return new GenericArrayValue(*this); }
 
     T_Value* GetMember(size_t index)
     {
@@ -364,8 +475,6 @@ public:
     {
         return index >= members_.size() ? NULL : members_[index];
     }
-
-    virtual Value* Clone() const { return new GenericArrayValue(*this); }
 
     virtual bool FromJsonValue(const rapidjson::Value &json_value);
 };  // class GenericArrayValue

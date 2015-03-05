@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- definition of simple elements -->
+
+    <!-- definition of attributes -->
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string" use="required"/>
+
+    <!-- definition of complex elements -->
+    <xs:element name="field">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="field" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute ref="name"/>
+            <xs:attribute ref="type"/>
+            <xs:attribute name="ref" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="document">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="field" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="skip" type="xs:boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="database">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="document" type="documentElement" maxOccus="unbounded"/>
+            </xs:sequence>
+            <xs:attribute ref="name" type="xs:string" use="required"/>
+            <xs:attribute name="namespace" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
+
