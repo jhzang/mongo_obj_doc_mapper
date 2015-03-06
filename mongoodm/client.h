@@ -79,9 +79,9 @@ public:
 	// TODO: gridfs
 
 private:
+	mongoc_client_t *raw_client_;
 	// If true, this object is responsible for destroying the underlying mongoc_client_t*
 	bool is_owner_;
-	mongoc_client_t *raw_client_;
 };  // class Client
 
 }  // namespace mongoodm
