@@ -153,7 +153,7 @@ bool Document::ToBson(bson_t *b) const
 
     for (ConstFieldIterator it = FieldBegin(); it != FieldEnd(); ++it) {
         const Field *field = *it;
-        const std::string &name = field->GetName();
+        //const std::string &name = field->GetName();
         const Value *value = field->GetValue();
         if (NULL == value || value->IsNull()) {
             // ignore null value

@@ -465,7 +465,6 @@ bool Collection::InsertDocument(
 {
     assert(raw_collection_ != NULL && document != NULL);
 
-	bson_error_t error;
     bson_t b_document = BSON_INITIALIZER;
     if (!document->ToBson(&b_document)) {
         return false;
@@ -515,7 +514,7 @@ bool Collection::InsertBulkDocuments(
             b_documents.push_back(b);
         }
         else {
-            LOG_ERROR("Collection.InsertBulkDocuments", "Failed to convert Document to bson_t");
+            LOG_ERROR("[Collection.InsertBulkDocuments] Failed to convert Document to bson_t");
             std::vector<const bson_t*>::iterator it_b;
             for (it_b = b_documents.begin(); it_b != b_documents.end(); ++it_b) {
                 bson_destroy(const_cast<bson_t*>(*it_b));
