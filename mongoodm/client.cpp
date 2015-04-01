@@ -91,7 +91,7 @@ bool Client::SetReadPrefs(mongoc_read_mode_t read_mode, const std::string &tags_
         bson_error_t error;
         tags = bson_new_from_json((const uint8_t*)tags_str.c_str(), tags_str.size(), &error);
         if (tags == NULL) {
-            LOG_BSON_ERROR("Client.SetReadPrefs", error);
+            MONGOODM_LOG_BSON_ERROR("Client.SetReadPrefs", error);
             return false;
         }
     }
@@ -152,7 +152,7 @@ bool Client::GetDatabaseNames(std::vector<std::string> &db_names) const
     bson_error_t error;
     char **strv = mongoc_client_get_database_names(raw_client_, &error);
     if (NULL == strv) {
-        LOG_BSON_ERROR("Client.GetDatabaseNames", error);
+        MONGOODM_LOG_BSON_ERROR("Client.GetDatabaseNames", error);
         return false;
     }
     for (size_t i = 0; strv[i] != NULL; ++i) {
@@ -175,7 +175,7 @@ bool Client::GetServerStatus(
         Utility::BsonToJsonString(&reply, reply_str);
     }
     else {
-        LOG_BSON_ERROR("Client.GetServerStatus", error);
+        MONGOODM_LOG_BSON_ERROR("Client.GetServerStatus", error);
     }
     bson_destroy(&reply);
     return retflag;
@@ -192,7 +192,7 @@ bool Client::ExecuteSimpleCommand(
     bson_error_t error;
     bool retflag = mongoc_client_command_simple(raw_client_, db_name, cmd, read_prefs, reply, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
+        MONGOODM_LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
     }
     return retflag;
 }
@@ -208,7 +208,7 @@ bool Client::ExecuteSimpleCommand(
     bson_error_t error;
     bson_t *cmd = bson_new_from_json((const uint8_t*)cmd_str.c_str(), cmd_str.size(), &error);
     if (NULL == cmd) {
-        LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
+        MONGOODM_LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
         return false;
     }
     bson_t reply = BSON_INITIALIZER;
@@ -217,7 +217,7 @@ bool Client::ExecuteSimpleCommand(
         Utility::BsonToJsonString(&reply, reply_str);
     }
     else {
-        LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
+        MONGOODM_LOG_BSON_ERROR("Client.ExecuteSimpleCommand", error);
     }
     bson_destroy(cmd);
     bson_destroy(&reply);
@@ -251,7 +251,7 @@ bool Client::RenameCollection(
     bson_error_t error;
     bool retflag = mongoc_collection_rename(collection, new_db_name, new_collection_name, drop_target_before_rename, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Client.RenameCollection", error);
+        MONGOODM_LOG_BSON_ERROR("Client.RenameCollection", error);
     }
     mongoc_collection_destroy(collection);
     return retflag;
@@ -266,7 +266,7 @@ bool Client::DropCollection(const char *db_name, const char *collection_name)
     bool retflag = mongoc_collection_drop(collection, &error);
     mongoc_collection_destroy(collection);
     if (!retflag) {
-        LOG_BSON_ERROR("Client.DropCollection", error);
+        MONGOODM_LOG_BSON_ERROR("Client.DropCollection", error);
     }
     return retflag;
 }

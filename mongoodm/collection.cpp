@@ -33,7 +33,7 @@ bool Collection::ParseCRUDReply(const bson_t *reply, rapidjson::Value *retval, r
 
     size_t length = 0;
     char *str = bson_as_json(reply, &length);
-    LOG_TRACE(str << std::endl);
+    MONGOODM_LOG_TRACE(str << std::endl);
     rapidjson::Document json_doc;
     if (json_doc.Parse(str).HasParseError()) {
         return false;
@@ -61,7 +61,7 @@ bool Collection::Rename(const char *new_db_name, const char *new_collection_name
     bson_error_t error;
     bool retflag = mongoc_collection_rename(raw_collection_, new_db_name, new_collection_name, drop_target_before_rename, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Collection.Rename", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Rename", error);
     }
     return retflag;
 }
@@ -73,7 +73,7 @@ bool Collection::Stats(const bson_t *options, bson_t *reply)
     bson_error_t error;
     bool retflag = mongoc_collection_stats(raw_collection_, options, reply, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Collection.Stats", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Stats", error);
     }
     return retflag;
 }
@@ -87,7 +87,7 @@ bool Collection::Stats(const std::string &options_str, std::string &reply_str)
     if (options_str.size() > 0) {
         options = bson_new_from_json((const uint8_t*)options_str.c_str(), options_str.size(), &error);
         if (NULL == options) {
-            LOG_BSON_ERROR("Collection.Stats", error);
+            MONGOODM_LOG_BSON_ERROR("Collection.Stats", error);
             return false;
         }
     }
@@ -110,7 +110,7 @@ bool Collection::Validate(const bson_t *options, bson_t *reply)
     bson_error_t error;
     bool retflag = mongoc_collection_validate(raw_collection_, options, reply, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Collection.Validate", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Validate", error);
     }
     return retflag;
 }
@@ -160,7 +160,7 @@ bool Collection::ExecuteSimpleCommand(
 	bson_error_t error;
     bool retflag = mongoc_collection_command_simple(raw_collection_, command, read_prefs, reply, &error);
     if (!retflag) {
-		LOG_BSON_ERROR("Collection.ExecuteSimpleCommand", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.ExecuteSimpleCommand", error);
 	}
     return retflag;
 }
@@ -175,7 +175,7 @@ bool Collection::ExecuteSimpleCommand(
     bson_error_t error;
     bson_t *command = bson_new_from_json((const uint8_t*)command_str.c_str(), command_str.size(), &error);
     if (NULL == command) {
-        LOG_BSON_ERROR("Collection.ExecuteSimpleCommand", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.ExecuteSimpleCommand", error);
         return false;
     }
     bson_t reply = BSON_INITIALIZER;
@@ -195,7 +195,7 @@ bool Collection::Drop()
 	bson_error_t error;
 	bool retflag = mongoc_collection_drop(raw_collection_, &error);
 	if (!retflag) {
-		LOG_BSON_ERROR("Collection.Drop", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Drop", error);
 	}
 	return retflag;
 }
@@ -207,7 +207,7 @@ bool Collection::CreateIndex(const bson_t *keys, const mongoc_index_opt_t *opt)
 	bson_error_t error;
 	bool retflag = mongoc_collection_create_index(raw_collection_, keys, opt, &error);
 	if (!retflag) {
-		LOG_BSON_ERROR("Collection.CreateIndex", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.CreateIndex", error);
 	}
 	return retflag;
 }
@@ -219,7 +219,7 @@ bool Collection::CreateIndex(const std::string &keys_str, const mongoc_index_opt
 	bson_error_t error;
 	bson_t *keys = bson_new_from_json((const uint8_t*)keys_str.c_str(), keys_str.size(), &error);
 	if (NULL == keys) {
-		LOG_BSON_ERROR("Collection.CreateIndex", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.CreateIndex", error);
 		return false;
 	}
 	bool retflag = CreateIndex(keys, opt);
@@ -234,7 +234,7 @@ bool Collection::DropIndex(const char *index_name)
 	bson_error_t error;
 	bool retflag = mongoc_collection_drop_index(raw_collection_, index_name, &error);
 	if (!retflag) {
-		LOG_BSON_ERROR("Collection.DropIndex", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.DropIndex", error);
 	}
 	return retflag;
 }
@@ -251,7 +251,7 @@ int64_t Collection::Count(
     bson_error_t error;
     int64_t count = mongoc_collection_count(raw_collection_, flags, query, skip, limit, read_prefs, &error);
     if (count < 0) {
-        LOG_BSON_ERROR("Collection.Count", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Count", error);
     }
     return count;
 }
@@ -268,7 +268,7 @@ int64_t Collection::Count(
     bson_error_t error;
     bson_t *query = bson_new_from_json((const uint8_t*)query_str.c_str(), query_str.size(), &error);
     if (NULL == query) {
-        LOG_BSON_ERROR("Collection.Count", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Count", error);
         return false;
     }
     int64_t count = Count(query, skip, limit, flags, read_prefs);
@@ -294,7 +294,7 @@ int Collection::Find(
     int retcode = results.size();
 	bson_error_t error;
     if (mongoc_cursor_error (cursor, &error)) {
-		LOG_BSON_ERROR("Collection.Find", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Find", error);
         retcode = -1;
     }
     mongoc_cursor_destroy(cursor);
@@ -317,7 +317,7 @@ int Collection::Find(
     if (query_str.size() > 0) {
         query = bson_new_from_json((const uint8_t*)query_str.c_str(), query_str.size(), &error);
         if (NULL == query) {
-			LOG_BSON_ERROR("Collection.Find", error);
+			MONGOODM_LOG_BSON_ERROR("Collection.Find", error);
             return -1;
         }
     }
@@ -327,7 +327,7 @@ int Collection::Find(
     bson_t *fields = bson_new_from_json((const uint8_t*)ret_fields_str.c_str(), ret_fields_str.size(), &error);
     if (ret_fields_str.size() > 0 && NULL == fields) {
         bson_destroy(query);
-		LOG_BSON_ERROR("Collection.Find", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Find", error);
         return -1;
     }
 
@@ -341,7 +341,7 @@ int Collection::Find(
     }
     int retcode = results.size();
     if (mongoc_cursor_error (cursor, &error)) {
-		LOG_BSON_ERROR("Collection.Find", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Find", error);
         retcode = -1;
     }
     mongoc_cursor_destroy(cursor);
@@ -368,7 +368,7 @@ bool Collection::FindAndModify(
     bson_error_t error;
     bool retflag = mongoc_collection_find_and_modify(raw_collection_, query, sort, update, fields, _remove, upsert, _new, reply, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Collection.FindAndModify", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.FindAndModify", error);
     }
     return retflag;
 }
@@ -389,18 +389,18 @@ bool Collection::FindAndModify(
     bson_error_t error;
     bson_t *query = bson_new_from_json((const uint8_t*)query_str, -1, &error);
     if (NULL == query) {
-        LOG_BSON_ERROR("Collection.FindAndModify", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.FindAndModify", error);
         return false;
     }
     bson_t *sort = (NULL == sort_str ? NULL : bson_new_from_json((const uint8_t*)sort_str, -1, &error));
     if (sort_str != NULL && NULL == sort) {
-        LOG_BSON_ERROR("Collection.FindAndModify", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.FindAndModify", error);
         bson_destroy(query);
         return false;
     }
     bson_t *update = (NULL == update_str ? NULL : bson_new_from_json((const uint8_t*)update_str, -1, &error));
     if (update_str != NULL && NULL == update) {
-        LOG_BSON_ERROR("Collection.FindAndModify", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.FindAndModify", error);
         bson_destroy(query);
         if (sort != NULL) {
             bson_destroy(sort);
@@ -409,7 +409,7 @@ bool Collection::FindAndModify(
     }
     bson_t *fields = (NULL == fields_str ? NULL : bson_new_from_json((const uint8_t*)fields_str, -1, &error));
     if (fields_str != NULL && NULL == fields) {
-        LOG_BSON_ERROR("Collection.FindAndModify", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.FindAndModify", error);
         bson_destroy(query);
         if (sort != NULL) {
             bson_destroy(sort);
@@ -453,7 +453,7 @@ bool Collection::Insert(
 	bson_error_t error;
     bool retflag = mongoc_collection_insert(raw_collection_, flags, document, write_concern, &error);
 	if (!retflag) {
-		LOG_BSON_ERROR("Collection.Insert", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Insert", error);
 	}
     return retflag;
 }
@@ -484,15 +484,59 @@ bool Collection::InsertBulk(
 
     mongoc_bulk_operation_t *bulk_op = mongoc_collection_create_bulk_operation(raw_collection_, true, write_concern);
     for (std::vector<const bson_t*>::const_iterator it = documents.begin(); it != documents.end(); ++it) {
-        Insert(*it, flags, write_concern);
+        mongoc_bulk_operation_insert(bulk_op, *it);
     }
 	bson_error_t error;
-    bool retflag = (mongoc_bulk_operation_execute(bulk_op, reply, &error) == documents.size());
-	if (!retflag) {
-		LOG_BSON_ERROR("Collection.InsertBulk", error);
-	}
-    bson_destroy(reply);
+    bool retflag = (mongoc_bulk_operation_execute(bulk_op, reply, &error) != 0);
+    if (!retflag) {
+        MONGOODM_LOG_BSON_ERROR("Collection.InsertBulk", error);
+    }
+    if (reply != NULL) {
+        bson_destroy(reply);
+    }
     mongoc_bulk_operation_destroy(bulk_op);
+    return retflag;
+}
+
+bool Collection::InsertBulk(
+        const std::vector<std::string> &documents,
+        mongoc_insert_flags_t flags/* = MONGOC_INSERT_NONE*/,
+        const mongoc_write_concern_t *write_concern/* = NULL*/,
+        rapidjson::Value *retval/* = NULL*/,
+        rapidjson::Value *last_error/* = NULL*/)
+{
+    assert(raw_collection_ != NULL && documents.size() > 0);
+
+    bool retflag = true;
+    std::vector<const bson_t*> b_documents;
+    std::vector<std::string>::const_iterator it;
+    bson_error_t error;
+    for (it = documents.begin(); it != documents.end(); ++it) {
+        bson_t *b = bson_new_from_json((const uint8_t*)it->c_str(), it->size(), &error);
+        if (NULL == b) {
+            MONGOODM_LOG_BSON_ERROR("Collection.InsertBulk", error);
+            retflag = false;
+            break;
+        }
+        b_documents.push_back(b);
+    }
+    bson_t *reply = NULL;
+    if (retflag) {
+        if (retval != NULL || last_error != NULL) {
+            reply = bson_new();
+        }
+        retflag = InsertBulk(b_documents, flags, write_concern, reply);
+        if (retflag && reply != NULL) {
+            ParseCRUDReply(reply, retval, last_error);
+        }
+    }
+    std::vector<const bson_t*>::const_iterator it_b;
+    for (it_b = b_documents.begin(); it_b != b_documents.end(); ++it_b) {
+        bson_destroy((bson_t*)*it_b);
+    }
+    if (reply != NULL) {
+        bson_destroy(reply);
+    }
     return retflag;
 }
 
@@ -514,7 +558,7 @@ bool Collection::InsertBulkDocuments(
             b_documents.push_back(b);
         }
         else {
-            LOG_ERROR("[Collection.InsertBulkDocuments] Failed to convert Document to bson_t");
+            MONGOODM_LOG_ERROR("[Collection.InsertBulkDocuments] Failed to convert Document to bson_t");
             std::vector<const bson_t*>::iterator it_b;
             for (it_b = b_documents.begin(); it_b != b_documents.end(); ++it_b) {
                 bson_destroy(const_cast<bson_t*>(*it_b));
@@ -553,7 +597,7 @@ bool Collection::Update(
 	bson_error_t error;
     bool retflag = mongoc_collection_update(raw_collection_, flags, selector, update, write_concern, &error);
 	if (!retflag) {
-		LOG_BSON_ERROR("Collection.Update", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Update", error);
 	}
     return retflag;
 }
@@ -569,13 +613,13 @@ bool Collection::Update(
 	bson_error_t error;
     bson_t *selector = bson_new_from_json((const uint8_t*)selector_str.c_str(), selector_str.size(), &error);
     if (NULL == selector) {
-		LOG_BSON_ERROR("Collection.Update", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Update", error);
         return false;
     }
     bson_t *update = bson_new_from_json((const uint8_t*)update_str.c_str(), update_str.size(), &error);
     if (NULL == update) {
         bson_destroy(selector);
-		LOG_BSON_ERROR("Collection.Update", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.Update", error);
         return false;
     }
     bool retflag = Update(selector, update, flags, write_concern);
@@ -619,7 +663,7 @@ bool Collection::Save(
     bson_error_t error;
     bool retflag = mongoc_collection_save(raw_collection_, document, write_concern, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Collection.Save", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Save", error);
     }
     return retflag;
 }
@@ -650,7 +694,7 @@ bool Collection::Remove(
     bson_error_t error;
     bool retflag = mongoc_collection_remove(raw_collection_, flags, selector, write_concern, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Collection.Remove", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Remove", error);
     }
     return retflag;
 }
@@ -665,7 +709,7 @@ bool Collection::Remove(
     bson_error_t error;
     bson_t *selector = bson_new_from_json((const uint8_t*)selector_str.c_str(), selector_str.size(), &error);
     if (NULL == selector) {
-        LOG_BSON_ERROR("Collection.Remove", error);
+        MONGOODM_LOG_BSON_ERROR("Collection.Remove", error);
         return false;
     }
     bool retflag = Remove(selector, flags, write_concern);

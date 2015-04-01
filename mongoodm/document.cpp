@@ -116,19 +116,19 @@ bool Document::FromJsonValue(const rapidjson::Value &json_value)
     rapidjson::Value::ConstMemberIterator it;
     for (it = json_value.MemberBegin(); it != json_value.MemberEnd(); ++it) {
         std::string name(it->name.GetString(), it->name.GetStringLength());
-        //LOG_TRACE("Parsing " << name << "...");
+        //MONGOODM_LOG_TRACE("Parsing " << name << "...");
         int code = ParseField(name, it->value);
         if (code < 0) {
-            LOG_ERROR("parsing named field \"" << name << "\" failed" << std::endl);
+            MONGOODM_LOG_ERROR("parsing named field \"" << name << "\" failed" << std::endl);
             return false;
         }
         else if (0 == code) {
-            //LOG_TRACE("unknown...");
+            //MONGOODM_LOG_TRACE("unknown...");
             if (!ParseUnknownField(name, it->value)) {
                 return false;
             }
         }
-        //LOG_TRACE("done" << std::endl);
+        //MONGOODM_LOG_TRACE("done" << std::endl);
     }
     return true;
 }

@@ -100,6 +100,19 @@ public:
             unsigned int offset = 0,
             unsigned int limit = 0,
             unsigned int batch_size = 100);
+    inline bool FindOne(
+            const bson_t *&result, 
+            bson_t *query, 
+            bson_t *ret_fields = NULL)
+    {
+        std::vector<const bson_t*> results;
+        if (Find(results, query, ret_fields, 0, 0, 1) > 0) {
+            result = results[0];
+            return true;
+        }
+        return false;
+    }
+
     int Find(
             std::vector<std::string> &results, 
             const std::string &query_str, 
@@ -107,6 +120,19 @@ public:
             unsigned int offset = 0,
             unsigned int limit = 0,
             unsigned int batch_size = 100);
+    inline bool FindOne(
+            std::string &result, 
+            const std::string &query_str, 
+            const std::string &ret_fields_str = "")
+    {
+        std::vector<std::string> results;
+        if (Find(results, query_str, ret_fields_str, 0, 0, 1) > 0) {
+            result = results[0];
+            return true;
+        }
+        return false;
+    }
+
     template <class T_Document>
     int FindDocuments(
             std::vector<T_Document*> &results, 
@@ -154,6 +180,12 @@ public:
             mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
             const mongoc_write_concern_t *write_concern = NULL,
             bson_t *reply = NULL);
+    bool InsertBulk(
+            const std::vector<std::string> &documents,
+            mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
+            const mongoc_write_concern_t *write_concern = NULL,
+            rapidjson::Value *retval = NULL,
+            rapidjson::Value *last_error = NULL);
     bool InsertBulkDocuments(
             const std::vector<const Document*> &documents,
             mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,

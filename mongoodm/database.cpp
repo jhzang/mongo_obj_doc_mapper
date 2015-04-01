@@ -39,7 +39,7 @@ bool Database::Drop()
 	bson_error_t error;
 	bool retflag = mongoc_database_drop(raw_db_, &error);
 	if (!retflag) {
-		LOG_BSON_ERROR("Database.Drop", error);
+		MONGOODM_LOG_BSON_ERROR("Database.Drop", error);
 	}
 	return retflag;
 }
@@ -54,7 +54,7 @@ bool Database::ExecuteSimpleCommand(
 	bson_error_t error;
     bool retflag = mongoc_database_command_simple(raw_db_, command, read_prefs, reply, &error);
     if (!retflag) {
-		LOG_BSON_ERROR("Database.ExecuteSimpleCommand", error);
+		MONGOODM_LOG_BSON_ERROR("Database.ExecuteSimpleCommand", error);
 	}
     return retflag;
 }
@@ -69,7 +69,7 @@ bool Database::ExecuteSimpleCommand(
     bson_error_t error;
     bson_t *command = bson_new_from_json((const uint8_t*)command_str.c_str(), command_str.size(), &error);
     if (NULL == command) {
-        LOG_BSON_ERROR("Database.ExecuteSimpleCommand", error);
+        MONGOODM_LOG_BSON_ERROR("Database.ExecuteSimpleCommand", error);
         return false;
     }
     bson_t reply = BSON_INITIALIZER;
@@ -89,7 +89,7 @@ bool Database::GetCollectionNames(std::vector<std::string> &names) const
 	bson_error_t error;
 	char **strv = mongoc_database_get_collection_names(raw_db_, &error);
 	if (NULL == strv) {
-		LOG_BSON_ERROR("Database.GetCollectionNames", error);
+		MONGOODM_LOG_BSON_ERROR("Database.GetCollectionNames", error);
 		return false;
 	}
 	for (size_t i = 0; strv[i] != NULL; ++i) {
@@ -106,7 +106,7 @@ int64_t Database::HasCollection(const char *name) const
     bson_error_t error;
     bool retflag = mongoc_database_has_collection(raw_db_, name, &error);
     if (!retflag) {
-        LOG_BSON_ERROR("Database.HasCollection", error);
+        MONGOODM_LOG_BSON_ERROR("Database.HasCollection", error);
     }
     return retflag;
 }

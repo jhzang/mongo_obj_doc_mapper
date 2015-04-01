@@ -42,7 +42,7 @@ int Collection::FindDocuments(
     if (query_str.size() > 0) {
         query = bson_new_from_json((const uint8_t*)query_str.c_str(), query_str.size(), &error);
         if (NULL == query) {
-			LOG_BSON_ERROR("Collection.FindDocuments", error);
+			MONGOODM_LOG_BSON_ERROR("Collection.FindDocuments", error);
             return -1;
         }
     }
@@ -52,7 +52,7 @@ int Collection::FindDocuments(
     bson_t *fields = bson_new_from_json((const uint8_t*)ret_fields_str.c_str(), ret_fields_str.size(), &error);
     if (ret_fields_str.size() > 0 && NULL == fields) {
         bson_destroy(query);
-		LOG_BSON_ERROR("Collection.FindDocuments", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.FindDocuments", error);
         return -1;
     }
 
@@ -62,10 +62,10 @@ int Collection::FindDocuments(
     while (mongoc_cursor_more(cursor) && mongoc_cursor_next(cursor, &d)) {
         size_t len = 0;
         char *str = bson_as_json(d, &len);
-        LOG_TRACE(str);
+        MONGOODM_LOG_TRACE(str);
         T_Document *doc = new T_Document();
         if (!doc->FromJsonString(str, len)) {
-            LOG_ERROR("[Collection.FindDocuments] Parsing error" << std::endl);
+            MONGOODM_LOG_ERROR("[Collection.FindDocuments] Parsing error" << std::endl);
             bson_free(str);
             retcode = -1;
             break;
@@ -74,7 +74,7 @@ int Collection::FindDocuments(
         bson_free(str);
     }
     if (mongoc_cursor_error (cursor, &error)) {
-		LOG_BSON_ERROR("Collection.FindDocuments", error);
+		MONGOODM_LOG_BSON_ERROR("Collection.FindDocuments", error);
         retcode = -1;
     }
     if (retcode != -1) {
@@ -101,9 +101,9 @@ bool Collection::FindOneDocument(
         return false;
     }
     std::string &raw_str = raw_results[0];
-    LOG_TRACE(raw_str);
+    MONGOODM_LOG_TRACE(raw_str);
     if (!result.FromJsonString(raw_str.c_str(), raw_str.size())) {
-        LOG_ERROR("[Collection.FindOneDocument] Parsing error" << std::endl);
+        MONGOODM_LOG_ERROR("[Collection.FindOneDocument] Parsing error" << std::endl);
         return false;
     }
     return true;

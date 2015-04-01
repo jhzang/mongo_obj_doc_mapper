@@ -26,47 +26,47 @@
 
 namespace mongoodm {
 
-#define LOG_LEVEL_ERROR 0
-#define LOG_LEVEL_WARN  1
-#define LOG_LEVEL_INFO  2
-#define LOG_LEVEL_DEBUG 3
-#define LOG_LEVEL_TRACE 4
+#define MONGOODM_LOG_LEVEL_ERROR 0
+#define MONGOODM_LOG_LEVEL_WARN  1
+#define MONGOODM_LOG_LEVEL_INFO  2
+#define MONGOODM_LOG_LEVEL_DEBUG 3
+#define MONGOODM_LOG_LEVEL_TRACE 4
 
-//#define LOG_LEVEL LOG_LEVEL_INFO
-#define LOG_LEVEL LOG_LEVEL_TRACE
+//#define MONGOODM_LOG_LEVEL MONGOODM_LOG_LEVEL_INFO
+#define MONGOODM_LOG_LEVEL MONGOODM_LOG_LEVEL_TRACE
 
-#if LOG_LEVEL >= LOG_LEVEL_TRACE
-#define LOG_TRACE(...) std::cout << "TRACE " << __VA_ARGS__
+#if MONGOODM_LOG_LEVEL >= MONGOODM_LOG_LEVEL_TRACE
+#define MONGOODM_LOG_TRACE(...) std::cout << "TRACE " << __VA_ARGS__
 #else
-#define LOG_TRACE(...)
+#define MONGOODM_LOG_TRACE(...)
 #endif
 
-#if LOG_LEVEL >= LOG_LEVEL_DEBUG
-#define LOG_DEBUG(...) std::cout << "DEBUG " << __VA_ARGS__
+#if MONGOODM_LOG_LEVEL >= MONGOODM_LOG_LEVEL_DEBUG
+#define MONGOODM_LOG_DEBUG(...) std::cout << "DEBUG " << __VA_ARGS__
 #else
-#define LOG_DEBUG(...)
+#define MONGOODM_LOG_DEBUG(...)
 #endif
 
-#if LOG_LEVEL >= LOG_LEVEL_INFO
-#define LOG_INFO(...) std::cout << " INFO " << __VA_ARGS__
+#if MONGOODM_LOG_LEVEL >= MONGOODM_LOG_LEVEL_INFO
+#define MONGOODM_LOG_INFO(...) std::cout << " INFO " << __VA_ARGS__
 #else
-#define LOG_INFO(...)
+#define MONGOODM_LOG_INFO(...)
 #endif
 
-#if LOG_LEVEL >= LOG_LEVEL_WARN
-#define LOG_WARN(...) std::cerr << " WARN " << __VA_ARGS__
+#if MONGOODM_LOG_LEVEL >= MONGOODM_LOG_LEVEL_WARN
+#define MONGOODM_LOG_WARN(...) std::cerr << " WARN " << __VA_ARGS__
 #else
-#define LOG_WARN(...)
+#define MONGOODM_LOG_WARN(...)
 #endif
 
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-#define LOG_ERROR(...) std::cerr << "ERROR " << __VA_ARGS__
+#if MONGOODM_LOG_LEVEL >= MONGOODM_LOG_LEVEL_ERROR
+#define MONGOODM_LOG_ERROR(...) std::cerr << "ERROR " << __VA_ARGS__
 #else
-#define LOG_ERROR(...)
+#define MONGOODM_LOG_ERROR(...)
 #endif
 
-#define LOG_BSON_ERROR(tag, error) \
-	LOG_ERROR("[" << tag << "] domain=" << error.domain << ",code=" << error.code << ",message=\"" << error.message << "\"" << std::endl)
+#define MONGOODM_LOG_BSON_ERROR(tag, error) \
+	MONGOODM_LOG_ERROR("[" << tag << "] domain=" << error.domain << ",code=" << error.code << ",message=\"" << error.message << "\"" << std::endl)
 
 }  // namespace mongoodm
 
