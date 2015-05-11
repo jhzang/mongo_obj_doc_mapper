@@ -458,6 +458,24 @@ bool Collection::Insert(
     return retflag;
 }
 
+bool Collection::Insert(
+        const std::string &document,
+        mongoc_insert_flags_t flags/* = MONGOC_INSERT_NONE*/,
+        const mongoc_write_concern_t *write_concern/* = NULL*/)
+{
+    assert(raw_collection_ != NULL && document.size() > 0);
+
+    bson_error_t error;
+    bson_t *b = bson_new_from_json((const uint8_t*)document.c_str(), document.size(), &error);
+    if (NULL == b) {
+        MONGOODM_LOG_BSON_ERROR("Collection.Insert", error);
+        return false;
+    }
+    bool retflag = Insert(b, flags, write_concern);
+    bson_destroy(b);
+    return retflag;
+}
+
 bool Collection::InsertDocument(
         const Document *document,
         mongoc_insert_flags_t flags/* = MONGOC_INSERT_NONE*/,
@@ -665,6 +683,23 @@ bool Collection::Save(
     if (!retflag) {
         MONGOODM_LOG_BSON_ERROR("Collection.Save", error);
     }
+    return retflag;
+}
+
+bool Collection::Save(
+        const std::string &document,
+        const mongoc_write_concern_t *write_concern/* = NULL*/)
+{
+    assert(raw_collection_ != NULL && document.size() > 0);
+
+    bson_error_t error;
+    bson_t *b = bson_new_from_json((const uint8_t*)document.c_str(), document.size(), &error);
+    if (NULL == b) {
+        MONGOODM_LOG_BSON_ERROR("Collection.Save", error);
+        return false;
+    }
+    bool retflag = Save(b, write_concern);
+    bson_destroy(b);
     return retflag;
 }
 

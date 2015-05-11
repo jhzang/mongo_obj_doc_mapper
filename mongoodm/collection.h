@@ -171,6 +171,10 @@ public:
             const bson_t *document,
             mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
             const mongoc_write_concern_t *write_concern = NULL);
+    bool Insert(
+            const std::string &document,
+            mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
+            const mongoc_write_concern_t *write_concern = NULL);
     bool InsertDocument(
             const Document *document,
             mongoc_insert_flags_t flags = MONGOC_INSERT_NONE,
@@ -210,6 +214,9 @@ public:
 
     bool Save(
             const bson_t *document,
+            const mongoc_write_concern_t *write_concern = NULL);
+    bool Save(
+            const std::string &document,
             const mongoc_write_concern_t *write_concern = NULL);
     bool SaveDocument(
             const Document *document,
