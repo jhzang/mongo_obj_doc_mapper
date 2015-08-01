@@ -27,6 +27,7 @@
 #include <mongoc.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <mongoodm/value.h>
 
 namespace mongoodm {
 
@@ -49,6 +50,21 @@ public:
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         json_val.Accept(writer);
         return buffer.GetString();
+    }
+
+    static bool MongoDateTime_To_time_t(const rapidjson::Value &from, time_t &to)
+    {
+        DateTimeValue dt_val;
+        if (!dt_val.FromJsonValue(from)) {
+            return false;
+        }
+        to = dt_val.GetTime();
+        return true;
+    }
+
+    static std::string MongoDateTime_From_time_t(time_t from)
+    {
+        return DateTimeValue(from).ToJsonString();
     }
 };
 
