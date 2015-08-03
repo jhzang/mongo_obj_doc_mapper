@@ -69,7 +69,7 @@ Value* Value::Create(const rapidjson::Value &json_value)
     return value;
 }
 
-bool NumberValue<bool, kBoolType, BSON_TYPE_BOOL>::FromJsonValue(const rapidjson::Value &json_value)
+bool NumberValue<bool, kBoolType, BSON_TYPE_BOOL>::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     if (json_value.IsNull()) {
         is_null_ = true;
@@ -77,6 +77,11 @@ bool NumberValue<bool, kBoolType, BSON_TYPE_BOOL>::FromJsonValue(const rapidjson
     }
     else if (json_value.IsBool()) {
         value_ = json_value.GetBool();
+        is_null_ = false;
+        return true;
+    }
+    else if (json_value.IsNumber() && !strict) {
+        value_ = (bool)json_value.GetDouble();
         is_null_ = false;
         return true;
     }
@@ -111,7 +116,7 @@ bool NumberValue<bool, kBoolType, BSON_TYPE_BOOL>::BuildBson(bson_t *parent, con
 }
 
 
-bool DateTimeValue::FromJsonValue(const rapidjson::Value &json_value)
+bool DateTimeValue::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     if (json_value.IsNull()) {
         is_null_ = true;
@@ -168,7 +173,7 @@ StringValue::StringValue(const char *str, size_t size/* = 0*/)
     }
 }
  
-bool StringValue::FromJsonValue(const rapidjson::Value &json_value)
+bool StringValue::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     if (json_value.IsNull()) {
         is_null_ = true;
@@ -207,7 +212,7 @@ bool StringValue::BuildBson(bson_t *parent, const std::string &name) const
 }
 
 
-bool BinaryValue::FromJsonValue(const rapidjson::Value &json_value)
+bool BinaryValue::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     if (json_value.IsNull()) {
         is_null_ = true;
@@ -262,7 +267,7 @@ bool BinaryValue::BuildBson(bson_t *parent, const std::string &name) const
 }
 
 
-bool ObjectIdValue::FromJsonValue(const rapidjson::Value &json_value)
+bool ObjectIdValue::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     if (json_value.IsNull()) {
         is_null_ = true;
@@ -344,7 +349,7 @@ void ArrayValue::CopyFrom(const Value &other)
     }
 }
 
-bool ArrayValue::FromJsonValue(const rapidjson::Value &json_value)
+bool ArrayValue::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     is_null_ = false;
     if (json_value.IsNull()) {

@@ -48,7 +48,7 @@ void Value::SafeDelete(T_Value *&value)
 
 
 template <typename T_Number, ValueType value_type, bson_type_t bson_value_type>
-bool NumberValue<T_Number, value_type, bson_value_type>::FromJsonValue(const rapidjson::Value &json_value)
+bool NumberValue<T_Number, value_type, bson_value_type>::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     is_null_ = false;
     if (json_value.IsNull()) {
@@ -63,10 +63,18 @@ bool NumberValue<T_Number, value_type, bson_value_type>::FromJsonValue(const rap
                 value_ = json_value.GetBool();
                 retflag = true;
             }
+            else if (json_value.IsNumber() && !strict) {
+                value_ = (bool)json_value.GetDouble();
+                retflag = true;
+            }
             break;
         case kInt32Type:
             if (json_value.IsInt()) {
                 value_ = json_value.GetInt();
+                retflag = true;
+            }
+            else if (json_value.IsNumber() && !strict) {
+                value_ = (int)json_value.GetDouble();
                 retflag = true;
             }
             break;
@@ -75,10 +83,18 @@ bool NumberValue<T_Number, value_type, bson_value_type>::FromJsonValue(const rap
                 value_ = json_value.GetUint();
                 retflag = true;
             }
+            else if (json_value.IsNumber() && !strict) {
+                value_ = (unsigned int)json_value.GetDouble();
+                retflag = true;
+            }
             break;
         case kInt64Type:
             if (json_value.IsInt64()) {
                 value_ = json_value.GetInt64();
+                retflag = true;
+            }
+            else if (json_value.IsNumber() && !strict) {
+                value_ = (int64_t)json_value.GetDouble();
                 retflag = true;
             }
             break;
@@ -87,16 +103,28 @@ bool NumberValue<T_Number, value_type, bson_value_type>::FromJsonValue(const rap
                 value_ = json_value.GetUint64();
                 retflag = true;
             }
+            else if (json_value.IsNumber() && !strict) {
+                value_ = (uint64_t)json_value.GetDouble();
+                retflag = true;
+            }
             break;
         case kDoubleType:
             if (json_value.IsDouble()) {
                 value_ = json_value.GetDouble();
                 retflag = true;
             }
+            else if (json_value.IsNumber() && !strict) {
+                value_ = (double)json_value.GetDouble();
+                retflag = true;
+            }
             break;
         case kDateTimeType:
             if (json_value.IsInt64()) {
                 value_ = json_value.GetInt64();
+                retflag = true;
+            }
+            else if (json_value.IsNumber() && !strict) {
+                value_ = (int64_t)json_value.GetDouble();
                 retflag = true;
             }
             break;
@@ -150,7 +178,7 @@ bool NumberValue<T_Number, value_type, bson_value_type>::BuildBson(bson_t *paren
 
 
 template<typename T_Value>
-bool GenericArrayValue<T_Value>::FromJsonValue(const rapidjson::Value &json_value)
+bool GenericArrayValue<T_Value>::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     is_null_ = false;
     if (json_value.IsNull()) {

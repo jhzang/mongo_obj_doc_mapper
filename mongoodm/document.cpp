@@ -109,7 +109,7 @@ bool Document::FromJsonString(const char *str, size_t size/* = 0*/)
     return FromJsonValue(d);
 }
 
-bool Document::FromJsonValue(const rapidjson::Value &json_value)
+bool Document::FromJsonValue(const rapidjson::Value &json_value, bool strict)
 {
     Clear();
 

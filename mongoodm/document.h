@@ -51,7 +51,7 @@ public:
 
     static Document* ParseJsonString(const char *str, size_t size = 0);
     virtual bool FromJsonString(const char *str, size_t size = 0);
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bool ToBson(bson_t *b) const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;

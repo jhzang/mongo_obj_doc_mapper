@@ -71,7 +71,7 @@ public:
     virtual bool IsNull() const { return is_null_; }
     virtual void SetNull(bool value) { is_null_ = value; }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value) = 0;
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false) = 0;
     virtual std::string ToJsonString() const = 0;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const = 0;
 
@@ -117,7 +117,7 @@ public:
         is_null_ = false;
     }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
 
@@ -162,7 +162,7 @@ public:
         is_null_ = false;
     }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
 
@@ -198,7 +198,7 @@ public:
  
     virtual Value* Clone() const { return new DateTimeValue(*this); }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
 
@@ -275,7 +275,7 @@ public:
         }
     }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
 
@@ -323,7 +323,7 @@ public:
         binary_data_ = binary_data;
     }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
 
@@ -360,7 +360,7 @@ public:
         is_null_ = false;
     }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bson_oid_t ToBsonValue() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
@@ -437,7 +437,7 @@ public:
         return true;
     }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
     virtual std::string ToJsonString() const;
     virtual bool BuildBson(bson_t *parent, const std::string &name) const;
 
@@ -476,7 +476,7 @@ public:
         return index >= members_.size() ? NULL : members_[index];
     }
 
-    virtual bool FromJsonValue(const rapidjson::Value &json_value);
+    virtual bool FromJsonValue(const rapidjson::Value &json_value, bool strict = false);
 };  // class GenericArrayValue
 
 
