@@ -449,7 +449,7 @@ def parse_document(document_element, document_type_name, is_embeded, documents):
                 field['ref'] = construct_embeded_document_type_name(document['name'], field['name'])
                 parse_document(field_element, field['ref'], True, documents)
             else:
-                print 'document %s field %s undefined document type' % (document['name'], filed['name'])
+                print 'document %s field %s undefined document type' % (document['name'], field['name'])
                 return False
             if field['ref'] in basic_data_type_dict:
                 field['value_class_name'] = basic_data_type_dict[field['ref']]['value']
