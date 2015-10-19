@@ -227,14 +227,15 @@ bool BinaryValue::FromJsonValue(const rapidjson::Value &json_value, bool strict)
             return false;
         }
         assert(it_member->value.IsString());
-        binary_subtype_ = (bson_subtype_t)atoi(it_member->value.GetString());
+        std::string tmp_str(it_member->value.GetString(), it_member->value.GetStringLength());
+        binary_subtype_ = (bson_subtype_t)atoi(tmp_str.c_str());
         // $binary
         it_member = json_value.FindMember("$binary");
         if (it_member == json_value.MemberEnd()) {
             return false;
         }
         assert(it_member->value.IsString());
-        binary_data_ = it_member->value.GetString();
+        binary_data_.assign(it_member->value.GetString(), it_member->value.GetStringLength());
         is_null_ = false;
         return true;
     }
@@ -280,7 +281,7 @@ bool ObjectIdValue::FromJsonValue(const rapidjson::Value &json_value, bool stric
             return false;
         }
         assert(it_member->value.IsString());
-        value_ = it_member->value.GetString();
+        value_.assign(it_member->value.GetString(), it_member->value.GetStringLength());
         is_null_ = false;
         return true;
     }
